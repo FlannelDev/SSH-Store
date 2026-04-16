@@ -1,0 +1,18 @@
+{
+    "id": "shh-store",
+    "name": "SHH Store",
+    "author": "Shadow Haven Hosting",
+    "version": "1.0.0",
+    "description": "Game server hosting storefront with Stripe and PayPal payment integration for Pelican Panel.",
+    "category": "plugin",
+    "url": "https://shadowhavenhosting.net",
+    "update_url": null,
+    "namespace": "ShhStore",
+    "class": "ShhStorePlugin",
+    "panels": "admin",
+    "panel_version": "^1.0.0",
+    "composer_packages": {
+        "stripe/stripe-php": "^20.0",
+        "srmklive/paypal": "^3.1"
+    }
+}

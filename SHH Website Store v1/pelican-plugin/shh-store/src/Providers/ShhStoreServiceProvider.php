@@ -1,0 +1,52 @@
+<?php
+
+namespace ShhStore\Providers;
+
+use Illuminate\Support\Facades\Route;
+use Illuminate\Support\ServiceProvider;
+use Livewire\Livewire;
+use ShhStore\Http\Controllers\PaymentController;
+use ShhStore\Livewire\Checkout;
+use ShhStore\Livewire\ProductDetail;
+use ShhStore\Livewire\StorePage;
+
+class ShhStoreServiceProvider extends ServiceProvider
+{
+    public function register(): void
+    {
+        $this->mergeConfigFrom(
+            plugin_path('shh-store', 'config', 'shh-store.php'),
+            'shh-store'
+        );
+    }
+
+    public function boot(): void
+    {
+        $this->registerRoutes();
+        $this->registerLivewireComponents();
+    }
+
+    protected function registerRoutes(): void
+    {
+        Route::middleware('web')->group(function () {
+            Route::get('/store', StorePage::class)->name('shh-store.store');
+            Route::get('/store/product/{slug}', ProductDetail::class)->name('shh-store.product');
+            Route::get('/store/checkout/{slug}/{cycle?}', Checkout::class)->name('shh-store.checkout');
+
+            Route::get('/store/payment/success/{order}', [PaymentController::class, 'success'])->name('shh-store.payment.success');
+            Route::get('/store/payment/cancel/{order}', [PaymentController::class, 'cancel'])->name('shh-store.payment.cancel');
+            Route::get('/store/payment/paypal/capture/{order}', [PaymentController::class, 'paypalCapture'])->name('shh-store.paypal.capture');
+        });
+
+        Route::post('/webhooks/shh-store/stripe', [PaymentController::class, 'stripeWebhook'])
+            ->name('shh-store.webhooks.stripe')
+            ->withoutMiddleware(\Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class);
+    }
+
+    protected function registerLivewireComponents(): void
+    {
+        Livewire::component('shh-store::store-page', StorePage::class);
+        Livewire::component('shh-store::product-detail', ProductDetail::class);
+        Livewire::component('shh-store::checkout', Checkout::class);
+    }
+}
