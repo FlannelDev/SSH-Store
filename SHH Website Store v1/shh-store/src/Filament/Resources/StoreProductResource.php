@@ -3,8 +3,10 @@
 namespace ShhStore\Filament\Resources;
 
 use Filament\Forms;
-use Filament\Forms\Form;
 use Filament\Resources\Resource;
+use Filament\Schemas\Components\Group;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Schema;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Support\Str;
@@ -15,21 +17,21 @@ class StoreProductResource extends Resource
 {
     protected static ?string $model = StoreProduct::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-server-stack';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-server-stack';
 
-    protected static ?string $navigationGroup = 'Store';
+    protected static string|\UnitEnum|null $navigationGroup = 'Store';
 
     protected static ?string $navigationLabel = 'Products';
 
     protected static ?int $navigationSort = 2;
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
-                Forms\Components\Group::make()
+        return $schema
+            ->components([
+                Group::make()
                     ->schema([
-                        Forms\Components\Section::make('Product Info')
+                        Section::make('Product Info')
                             ->schema([
                                 Forms\Components\Select::make('category_id')
                                     ->relationship('category', 'name')
@@ -55,7 +57,7 @@ class StoreProductResource extends Resource
                                     ->placeholder('e.g. Standard, Premium'),
                             ])->columns(2),
 
-                        Forms\Components\Section::make('Hardware Specs')
+                        Section::make('Hardware Specs')
                             ->schema([
                                 Forms\Components\TextInput::make('cpu')
                                     ->label('CPU')
@@ -68,7 +70,7 @@ class StoreProductResource extends Resource
                                     ->maxLength(255),
                             ])->columns(3),
 
-                        Forms\Components\Section::make('Features')
+                        Section::make('Features')
                             ->schema([
                                 Forms\Components\KeyValue::make('features')
                                     ->keyLabel('Feature')
@@ -78,9 +80,9 @@ class StoreProductResource extends Resource
                             ]),
                     ])->columnSpan(['lg' => 2]),
 
-                Forms\Components\Group::make()
+                Group::make()
                     ->schema([
-                        Forms\Components\Section::make('Pricing')
+                        Section::make('Pricing')
                             ->schema([
                                 Forms\Components\TextInput::make('price_monthly')
                                     ->label('Monthly Price')
@@ -97,7 +99,7 @@ class StoreProductResource extends Resource
                                     ->prefix('$'),
                             ]),
 
-                        Forms\Components\Section::make('Status')
+                        Section::make('Status')
                             ->schema([
                                 Forms\Components\Toggle::make('is_visible')
                                     ->label('Visible on storefront')

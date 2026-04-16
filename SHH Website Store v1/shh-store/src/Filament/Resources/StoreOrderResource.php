@@ -3,8 +3,9 @@
 namespace ShhStore\Filament\Resources;
 
 use Filament\Forms;
-use Filament\Forms\Form;
 use Filament\Resources\Resource;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Schema;
 use Filament\Tables;
 use Filament\Tables\Table;
 use ShhStore\Filament\Resources\StoreOrderResource\Pages;
@@ -14,19 +15,19 @@ class StoreOrderResource extends Resource
 {
     protected static ?string $model = StoreOrder::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-shopping-cart';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-shopping-cart';
 
-    protected static ?string $navigationGroup = 'Store';
+    protected static string|\UnitEnum|null $navigationGroup = 'Store';
 
     protected static ?string $navigationLabel = 'Orders';
 
     protected static ?int $navigationSort = 3;
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
-                Forms\Components\Section::make('Order Details')
+        return $schema
+            ->components([
+                Section::make('Order Details')
                     ->schema([
                         Forms\Components\TextInput::make('order_number')
                             ->disabled(),
@@ -52,7 +53,7 @@ class StoreOrderResource extends Resource
                             ->disabled(),
                     ])->columns(2),
 
-                Forms\Components\Section::make('Customer Info')
+                Section::make('Customer Info')
                     ->schema([
                         Forms\Components\TextInput::make('customer_name')
                             ->disabled(),
