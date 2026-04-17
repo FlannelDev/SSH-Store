@@ -6,7 +6,7 @@
     "description": "Game server hosting storefront with Stripe and PayPal payment integration for Pelican Panel.",
     "category": "plugin",
     "url": "https://shadowhavenhosting.net/store",
-    "update_url": null,
+    "update_url": "https://raw.githubusercontent.com/FlannelDev/SSH-Store/main/SHH%20Website%20Store%20v1/shh-store/update.json",
     "namespace": "ShhStore",
     "class": "ShhStorePlugin",
     "panels": "admin",
