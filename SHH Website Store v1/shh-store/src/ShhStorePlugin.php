@@ -5,6 +5,7 @@ namespace ShhStore;
 use Filament\Contracts\Plugin;
 use Filament\Panel;
 use ShhStore\Filament\Pages\PluginUpdater;
+use ShhStore\Filament\Pages\StoreSettings;
 use ShhStore\Filament\Resources\StoreCategoryResource;
 use ShhStore\Filament\Resources\StoreOrderResource;
 use ShhStore\Filament\Resources\StoreProductResource;
@@ -26,6 +27,7 @@ class ShhStorePlugin implements Plugin
 
         $panel->pages([
             PluginUpdater::class,
+            StoreSettings::class,
         ]);
     }
 
