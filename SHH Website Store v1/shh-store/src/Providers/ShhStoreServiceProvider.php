@@ -2,7 +2,7 @@
 
 namespace ShhStore\Providers;
 
-use Illuminate\Support\Facades\Artisan;
+use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\ServiceProvider;
@@ -25,15 +25,15 @@ class ShhStoreServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->loadViewsFrom(
-            plugin_path('shh-store', 'resources', 'views'),
+            __DIR__ . '/../../resources/views',
             'shh-store'
         );
 
         $this->loadMigrationsFrom(
-            plugin_path('shh-store', 'database', 'migrations')
+            __DIR__ . '/../../database/migrations'
         );
 
-        $this->runMigrationsIfNeeded();
+        $this->ensureTablesExist();
 
         $this->registerRoutes();
         $this->registerLivewireComponents();
@@ -63,26 +63,74 @@ class ShhStoreServiceProvider extends ServiceProvider
         Livewire::component('shh-store::checkout', Checkout::class);
     }
 
-    protected function runMigrationsIfNeeded(): void
+    protected function ensureTablesExist(): void
     {
         try {
-            $tables = [
-                'shh_store_categories',
-                'shh_store_products',
-                'shh_store_orders',
-                'shh_store_settings',
-            ];
+            if (!Schema::hasTable('shh_store_categories')) {
+                Schema::create('shh_store_categories', function (Blueprint $table) {
+                    $table->id();
+                    $table->string('name');
+                    $table->string('slug')->unique();
+                    $table->text('description')->nullable();
+                    $table->string('icon')->nullable();
+                    $table->integer('sort_order')->default(0);
+                    $table->boolean('is_visible')->default(true);
+                    $table->timestamps();
+                });
+            }
 
-            foreach ($tables as $table) {
-                if (!Schema::hasTable($table)) {
-                    Artisan::call('migrate', [
-                        '--path' => plugin_path('shh-store', 'database', 'migrations'),
-                        '--force' => true,
-                        '--realpath' => true,
-                    ]);
+            if (!Schema::hasTable('shh_store_products')) {
+                Schema::create('shh_store_products', function (Blueprint $table) {
+                    $table->id();
+                    $table->foreignId('category_id')->constrained('shh_store_categories')->cascadeOnDelete();
+                    $table->string('name');
+                    $table->string('slug')->unique();
+                    $table->text('description')->nullable();
+                    $table->string('tier')->nullable();
+                    $table->string('cpu')->nullable();
+                    $table->string('ram')->nullable();
+                    $table->string('storage')->nullable();
+                    $table->decimal('price_monthly', 8, 2);
+                    $table->decimal('price_quarterly', 8, 2)->nullable();
+                    $table->decimal('price_annually', 8, 2)->nullable();
+                    $table->boolean('is_featured')->default(false);
+                    $table->boolean('is_visible')->default(true);
+                    $table->boolean('in_stock')->default(true);
+                    $table->integer('sort_order')->default(0);
+                    $table->json('features')->nullable();
+                    $table->timestamps();
+                });
+            }
 
-                    break;
-                }
+            if (!Schema::hasTable('shh_store_orders')) {
+                Schema::create('shh_store_orders', function (Blueprint $table) {
+                    $table->id();
+                    $table->string('order_number')->unique();
+                    $table->foreignId('user_id')->nullable()->constrained('users')->nullOnDelete();
+                    $table->foreignId('product_id')->constrained('shh_store_products')->cascadeOnDelete();
+                    $table->string('billing_cycle');
+                    $table->decimal('amount', 8, 2);
+                    $table->string('currency', 3)->default('USD');
+                    $table->string('status')->default('pending');
+                    $table->string('payment_method')->nullable();
+                    $table->string('payment_id')->nullable();
+                    $table->string('transaction_id')->nullable();
+                    $table->string('customer_email');
+                    $table->string('customer_name')->nullable();
+                    $table->json('meta')->nullable();
+                    $table->timestamp('paid_at')->nullable();
+                    $table->timestamps();
+                });
+            }
+
+            if (!Schema::hasTable('shh_store_settings')) {
+                Schema::create('shh_store_settings', function (Blueprint $table) {
+                    $table->id();
+                    $table->string('key')->unique();
+                    $table->longText('value')->nullable();
+                    $table->boolean('is_encrypted')->default(false);
+                    $table->timestamps();
+                });
             }
         } catch (\Throwable $e) {
             report($e);
