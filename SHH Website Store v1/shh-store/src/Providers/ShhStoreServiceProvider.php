@@ -29,13 +29,13 @@ class ShhStoreServiceProvider extends ServiceProvider
     protected function registerRoutes(): void
     {
         Route::middleware('web')->group(function () {
-            Route::get('/store', StorePage::class)->name('shh-store.store');
-            Route::get('/store/product/{slug}', ProductDetail::class)->name('shh-store.product');
-            Route::get('/store/checkout/{slug}/{cycle?}', Checkout::class)->name('shh-store.checkout');
+            Route::get('/storestaging', StorePage::class)->name('shh-store.store');
+            Route::get('/storestaging/product/{slug}', ProductDetail::class)->name('shh-store.product');
+            Route::get('/storestaging/checkout/{slug}/{cycle?}', Checkout::class)->name('shh-store.checkout');
 
-            Route::get('/store/payment/success/{order}', [PaymentController::class, 'success'])->name('shh-store.payment.success');
-            Route::get('/store/payment/cancel/{order}', [PaymentController::class, 'cancel'])->name('shh-store.payment.cancel');
-            Route::get('/store/payment/paypal/capture/{order}', [PaymentController::class, 'paypalCapture'])->name('shh-store.paypal.capture');
+            Route::get('/storestaging/payment/success/{order}', [PaymentController::class, 'success'])->name('shh-store.payment.success');
+            Route::get('/storestaging/payment/cancel/{order}', [PaymentController::class, 'cancel'])->name('shh-store.payment.cancel');
+            Route::get('/storestaging/payment/paypal/capture/{order}', [PaymentController::class, 'paypalCapture'])->name('shh-store.paypal.capture');
         });
 
         Route::post('/webhooks/shh-store/stripe', [PaymentController::class, 'stripeWebhook'])
