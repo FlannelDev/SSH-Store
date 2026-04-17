@@ -2,6 +2,7 @@
 
 namespace ShhStore\Filament\Resources;
 
+use Filament\Actions\EditAction;
 use Filament\Forms;
 use Filament\Resources\Resource;
 use Filament\Schemas\Components\Section;
@@ -123,10 +124,9 @@ class StoreOrderResource extends Resource
                         'annually' => 'Annually',
                     ]),
             ])
-            ->actions([
-                Tables\Actions\EditAction::make(),
-            ])
-            ->bulkActions([]);
+            ->recordActions([
+                EditAction::make(),
+            ]);
     }
 
     public static function getRelations(): array
