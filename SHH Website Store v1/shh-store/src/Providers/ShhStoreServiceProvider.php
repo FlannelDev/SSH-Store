@@ -2,6 +2,8 @@
 
 namespace ShhStore\Providers;
 
+use Illuminate\Support\Facades\Crypt;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
 use Livewire\Livewire;
@@ -22,8 +24,53 @@ class ShhStoreServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        try {
+            $this->loadSavedSettings();
+        } catch (\Throwable $e) {
+            // Don't break the app if settings can't be loaded
+        }
+
         $this->registerRoutes();
         $this->registerLivewireComponents();
+    }
+
+    protected function loadSavedSettings(): void
+    {
+        $path = plugin_path('shh-store', 'settings.json');
+
+        if (!File::exists($path)) {
+            return;
+        }
+
+        $raw = json_decode(File::get($path), true);
+
+        if (!is_array($raw)) {
+            return;
+        }
+
+        $keys = ['stripe_key', 'stripe_secret', 'stripe_webhook_secret', 'paypal_client_id', 'paypal_client_secret'];
+        $map = [
+            'stripe_key' => 'shh-store.stripe.key',
+            'stripe_secret' => 'shh-store.stripe.secret',
+            'stripe_webhook_secret' => 'shh-store.stripe.webhook_secret',
+            'paypal_client_id' => 'shh-store.paypal.client_id',
+            'paypal_client_secret' => 'shh-store.paypal.client_secret',
+        ];
+
+        foreach ($keys as $key) {
+            $value = $raw[$key] ?? '';
+            if ($value !== '' && empty(config($map[$key]))) {
+                try {
+                    config([$map[$key] => Crypt::decryptString($value)]);
+                } catch (\Exception $e) {
+                    // Skip invalid encrypted values
+                }
+            }
+        }
+
+        if (!empty($raw['paypal_mode']) && empty(env('SHH_PAYPAL_MODE'))) {
+            config(['shh-store.paypal.mode' => $raw['paypal_mode']]);
+        }
     }
 
     protected function registerRoutes(): void
