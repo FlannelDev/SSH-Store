@@ -2,7 +2,7 @@
     "id": "shh-store",
     "name": "SHH Store",
     "author": "Flannel",
-    "version": "1.1.0",
+    "version": "1.1.1",
     "description": "Game server hosting storefront with Stripe and PayPal payment integration for Pelican Panel.",
     "category": "plugin",
     "url": "https://dev.shadowhavenhosting.net/storestaging",
