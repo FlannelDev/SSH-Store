@@ -17,7 +17,7 @@ class ShhStoreServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->mergeConfigFrom(
-            plugin_path('shh-store', 'config', 'shh-store.php'),
+            __DIR__ . '/../../config/shh-store.php',
             'shh-store'
         );
     }
