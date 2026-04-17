@@ -22,6 +22,15 @@ class ShhStoreServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        $this->loadViewsFrom(
+            plugin_path('shh-store', 'resources', 'views'),
+            'shh-store'
+        );
+
+        $this->loadMigrationsFrom(
+            plugin_path('shh-store', 'database', 'migrations')
+        );
+
         $this->registerRoutes();
         $this->registerLivewireComponents();
     }

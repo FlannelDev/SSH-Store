@@ -1,0 +1,15 @@
+{
+    "id": "shadow-store",
+    "name": "Shadow Store",
+    "version": "1.0.0",
+    "description": "Complete storefront for selling game servers with Stripe and PayPal integration",
+    "author": "Shadow Haven Hosting",
+    "category": "plugin",
+    "namespace": "App\\Plugins\\ShadowStore",
+    "class": "ShadowStorePlugin",
+    "provider": "App\\Plugins\\ShadowStore\\Providers\\ShadowStoreServiceProvider",
+    "meta": {
+        "status": "enabled",
+        "status_message": null
+    }
+}
