@@ -7,29 +7,22 @@
 
     <title>{{ $title ?? 'Store' }} — Shadow Haven Hosting</title>
 
-    <!-- Fonts -->
-    <link rel="preconnect" href="https://fonts.bunny.net">
-    <link href="https://fonts.bunny.net/css?family=inter:400,500,600,700,800,900" rel="stylesheet" />
-
-    <!-- Styles -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @livewireStyles
 </head>
-<body class="min-h-screen bg-gray-950 text-gray-100 antialiased">
+<body class="min-h-screen bg-gray-950 font-sans text-gray-200 antialiased">
     {{-- Navigation --}}
-    <nav class="sticky top-0 z-50 border-b border-gray-800/60 bg-gray-950/80 backdrop-blur-xl">
-        <div class="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-            <a href="{{ route('shh-store.store') }}" class="flex items-center gap-3" wire:navigate>
-                <span class="text-xl font-bold tracking-tight text-white">
-                    <span class="text-indigo-400">SH</span> Shadow Haven Hosting
-                </span>
+    <nav class="sticky top-0 z-50 border-b border-white/5 bg-gray-950/90 backdrop-blur-sm">
+        <div class="mx-auto flex h-14 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
+            <a href="{{ route('shh-store.store') }}" class="text-sm font-semibold tracking-tight text-white" wire:navigate>
+                Shadow Haven Hosting
             </a>
 
-            <div class="flex items-center gap-6">
-                <a href="{{ route('shh-store.store') }}" class="text-sm font-medium text-gray-300 transition hover:text-white" wire:navigate>
-                    Game Servers
+            <div class="flex items-center gap-5">
+                <a href="{{ route('shh-store.store') }}" class="text-sm text-gray-400 transition hover:text-white" wire:navigate>
+                    Store
                 </a>
-                <a href="https://discord.gg/AqCVPtpgYQ" target="_blank" class="text-sm font-medium text-gray-300 transition hover:text-white">
+                <a href="https://discord.gg/AqCVPtpgYQ" target="_blank" rel="noopener noreferrer" class="text-sm text-gray-400 transition hover:text-white">
                     Discord
                 </a>
             </div>
@@ -42,24 +35,18 @@
     </main>
 
     {{-- Footer --}}
-    <footer class="border-t border-gray-800/60 bg-gray-950 py-12">
+    <footer class="border-t border-white/5 py-8">
         <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div class="flex flex-col items-center justify-between gap-4 sm:flex-row">
+            <div class="flex flex-col items-center justify-between gap-3 sm:flex-row">
                 <div>
-                    <p class="text-sm font-semibold text-white">Shadow Haven Hosting</p>
-                    <p class="mt-1 text-xs text-gray-500">
-                        Servers in partnership with Thunder Buddies Studio
-                    </p>
+                    <p class="text-sm font-medium text-gray-300">Shadow Haven Hosting</p>
+                    <p class="mt-0.5 text-xs text-gray-600">In partnership with Thunder Buddies Studio</p>
                 </div>
-                <div class="flex items-center gap-6">
-                    <a href="https://discord.gg/AqCVPtpgYQ" target="_blank" class="text-sm text-gray-400 transition hover:text-indigo-400">
-                        Join Discord
-                    </a>
-                </div>
+                <a href="https://discord.gg/AqCVPtpgYQ" target="_blank" rel="noopener noreferrer" class="text-xs text-gray-500 transition hover:text-gray-300">
+                    Join Discord
+                </a>
             </div>
-            <div class="mt-8 border-t border-gray-800/60 pt-8 text-center">
-                <p class="text-xs text-gray-600">&copy; {{ date('Y') }} Shadow Haven Hosting. All rights reserved.</p>
-            </div>
+            <p class="mt-6 text-center text-xs text-gray-700">&copy; {{ date('Y') }} Shadow Haven Hosting. All rights reserved.</p>
         </div>
     </footer>
 
