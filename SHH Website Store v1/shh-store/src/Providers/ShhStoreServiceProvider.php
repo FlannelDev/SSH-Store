@@ -24,7 +24,12 @@ class ShhStoreServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
-        $this->loadSavedSettings();
+        try {
+            $this->loadSavedSettings();
+        } catch (\Throwable $e) {
+            // Don't break the app if settings can't be loaded
+        }
+
         $this->registerRoutes();
         $this->registerLivewireComponents();
     }

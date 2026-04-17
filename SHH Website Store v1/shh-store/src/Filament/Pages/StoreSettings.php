@@ -6,18 +6,14 @@ use Filament\Actions\Action;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
-use Filament\Forms\Concerns\InteractsWithForms;
-use Filament\Forms\Contracts\HasForms;
 use Filament\Forms\Form;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\File;
 
-class StoreSettings extends Page implements HasForms
+class StoreSettings extends Page
 {
-    use InteractsWithForms;
-
     protected static ?string $navigationIcon = 'heroicon-o-cog-6-tooth';
 
     protected static ?string $navigationLabel = 'Settings';
