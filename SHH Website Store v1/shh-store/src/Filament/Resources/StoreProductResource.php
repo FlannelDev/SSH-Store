@@ -9,6 +9,7 @@ use Filament\Forms;
 use Filament\Resources\Resource;
 use Filament\Schemas\Components\Group;
 use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Schema;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -45,7 +46,7 @@ class StoreProductResource extends Resource
                                     ->required()
                                     ->maxLength(255)
                                     ->live(onBlur: true)
-                                    ->afterStateUpdated(fn (string $operation, $state, Forms\Set $set) =>
+                                    ->afterStateUpdated(fn (string $operation, $state, Set $set) =>
                                         $operation === 'create' ? $set('slug', Str::slug($state)) : null
                                     ),
                                 Forms\Components\TextInput::make('slug')
