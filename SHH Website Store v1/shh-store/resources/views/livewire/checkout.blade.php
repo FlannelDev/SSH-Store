@@ -1,4 +1,5 @@
 <div>
+    @php use ShhStore\Models\StoreSetting; @endphp
     {{-- Breadcrumb --}}
     <div class="border-b border-white/5">
         <div class="mx-auto max-w-7xl px-4 py-3 sm:px-6 lg:px-8">
@@ -152,7 +153,7 @@
                         <p class="mt-1 text-right text-xs text-gray-600">Billed {{ $cycleLabel }}</p>
                     </div>
 
-                    <p class="mt-3 text-center text-[11px] text-gray-600">SSL Encrypted · Secure Payments</p>
+                    <p class="mt-3 text-center text-[11px] text-gray-600">{{ StoreSetting::getValue('checkout_secure_text', 'SSL Encrypted · Secure Payments') }}</p>
                 </div>
             </div>
         </div>

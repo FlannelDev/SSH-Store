@@ -1,6 +1,6 @@
 {
     "*": {
-        "version": "1.2.5",
+        "version": "1.2.6",
         "download_url": "https://github.com/FlannelDev/SSH-Store/releases/latest/download/shh-store.zip"
     }
 }

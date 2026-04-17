@@ -21,13 +21,39 @@ class StoreSetting extends Model
         'is_encrypted' => 'boolean',
     ];
 
+    protected static array $runtimeCache = [];
+    protected static bool $cacheWarmed = false;
+
+    /**
+     * Pre-load all non-encrypted settings into memory once per request.
+     */
+    protected static function warmCache(): void
+    {
+        if (static::$cacheWarmed) {
+            return;
+        }
+
+        if (!SchemaFacade::hasTable('shh_store_settings')) {
+            static::$cacheWarmed = true;
+            return;
+        }
+
+        static::query()->get()->each(function (self $setting) {
+            static::$runtimeCache[$setting->key] = $setting;
+        });
+
+        static::$cacheWarmed = true;
+    }
+
     public static function getValue(string $key, mixed $default = null): mixed
     {
-        if (!SchemaFacade::hasTable('shh_store_settings')) {
+        static::warmCache();
+
+        if (!array_key_exists($key, static::$runtimeCache)) {
             return $default;
         }
 
-        $setting = static::query()->where('key', $key)->first();
+        $setting = static::$runtimeCache[$key];
         if (!$setting) {
             return $default;
         }
@@ -59,12 +85,15 @@ class StoreSetting extends Model
             $storedValue = $value === null ? null : (string) $value;
         }
 
-        static::query()->updateOrCreate(
+        $setting = static::query()->updateOrCreate(
             ['key' => $key],
             [
                 'value' => $storedValue,
                 'is_encrypted' => $encrypted,
             ]
         );
+
+        // Update runtime cache
+        static::$runtimeCache[$key] = $setting;
     }
 }

@@ -1,4 +1,5 @@
 <div>
+    @php use ShhStore\Models\StoreSetting; @endphp
     {{-- Breadcrumb --}}
     <div class="border-b border-white/5">
         <div class="mx-auto max-w-7xl px-4 py-3 sm:px-6 lg:px-8">
@@ -119,7 +120,7 @@
                             <a href="{{ route('shh-store.checkout', ['slug' => $product->slug, 'cycle' => $billingCycle]) }}"
                                wire:navigate
                                class="block w-full rounded-lg bg-primary-600 px-5 py-2.5 text-center text-sm font-medium text-white transition hover:bg-primary-500">
-                                Configure & Deploy
+                                {{ StoreSetting::getValue('product_cta_text', 'Configure & Deploy') }}
                             </a>
                         @else
                             <button disabled class="w-full cursor-not-allowed rounded-lg bg-white/5 px-5 py-2.5 text-sm font-medium text-gray-500">
@@ -128,7 +129,7 @@
                         @endif
 
                         <p class="mt-3 text-center text-[11px] text-gray-600">
-                            Instant deployment · DDoS protected · Ryzen 9 9950X3D
+                            {{ StoreSetting::getValue('product_tagline', 'Instant deployment · DDoS protected · Ryzen 9 9950X3D') }}
                         </p>
 
                         {{-- Quick Specs --}}

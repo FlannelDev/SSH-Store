@@ -1,4 +1,5 @@
 <x-shh-store::layouts.store title="Payment Successful">
+    @php use ShhStore\Models\StoreSetting; @endphp
     <div class="flex min-h-[60vh] items-center justify-center px-4">
         <div class="w-full max-w-md text-center">
             <div class="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-full bg-success-500/10">
@@ -6,7 +7,7 @@
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
                 </svg>
             </div>
-            <h1 class="text-2xl font-bold text-white">Payment Successful</h1>
+            <h1 class="text-2xl font-bold text-white">{{ StoreSetting::getValue('payment_success_title', 'Payment Successful') }}</h1>
             <p class="mt-2 text-sm text-gray-400">
                 Order <span class="font-mono font-medium text-gray-300">{{ $order->order_number }}</span> has been received.
             </p>
@@ -43,7 +44,7 @@
 
             <p class="mt-4 text-xs text-gray-600">
                 Confirmation sent to <span class="text-gray-400">{{ $order->customer_email }}</span>.
-                Your server will be provisioned shortly.
+                {{ StoreSetting::getValue('payment_success_message', 'Your server will be provisioned shortly.') }}
             </p>
 
             <div class="mt-6 flex justify-center">

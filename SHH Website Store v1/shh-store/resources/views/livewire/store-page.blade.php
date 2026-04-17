@@ -1,39 +1,43 @@
 <div>
+    @php use ShhStore\Models\StoreSetting; @endphp
     {{-- Hero --}}
     <section class="border-b border-white/5">
         <div class="mx-auto max-w-7xl px-4 py-16 sm:px-6 sm:py-20 lg:px-8">
             <div class="max-w-2xl">
-                <h1 class="text-3xl font-bold tracking-tight text-white sm:text-4xl">Game Servers</h1>
+                <h1 class="text-3xl font-bold tracking-tight text-white sm:text-4xl">{{ StoreSetting::getValue('hero_title', 'Game Servers') }}</h1>
                 <p class="mt-3 text-base text-gray-400">
-                    200+ supported games on Ryzen 9 9950X3D with NVMe storage, sensible density, and clean billing.
+                    {{ StoreSetting::getValue('hero_subtitle', '200+ supported games on Ryzen 9 9950X3D with NVMe storage, sensible density, and clean billing.') }}
                 </p>
                 <div class="mt-6 flex flex-wrap gap-3">
                     <a href="#catalog" class="rounded-lg bg-primary-600 px-5 py-2.5 text-sm font-medium text-white transition hover:bg-primary-500">
-                        Browse Catalog
+                        {{ StoreSetting::getValue('hero_cta_text', 'Browse Catalog') }}
                     </a>
                     <a href="https://discord.gg/AqCVPtpgYQ" target="_blank" rel="noopener noreferrer" class="rounded-lg border border-white/10 px-5 py-2.5 text-sm font-medium text-gray-300 transition hover:border-white/20 hover:text-white">
-                        Join Discord
+                        {{ StoreSetting::getValue('hero_cta2_text', 'Join Discord') }}
                     </a>
                 </div>
             </div>
 
             <div class="mt-10 grid grid-cols-2 gap-3 sm:grid-cols-4">
+                @php
+                $heroStats = [];
+                foreach (range(1, 4) as $i) {
+                    $heroStats[] = [
+                        'value' => StoreSetting::getValue("hero_stat{$i}_value", match ($i) {
+                            1 => '$20', 2 => '200+', 3 => '9950X3D', 4 => 'NVMe',
+                        }),
+                        'label' => StoreSetting::getValue("hero_stat{$i}_label", match ($i) {
+                            1 => 'Starting monthly', 2 => 'Games supported', 3 => 'Ryzen CPU', 4 => 'Fast storage',
+                        }),
+                    ];
+                }
+                @endphp
+                @foreach($heroStats as $stat)
                 <div class="rounded-lg border border-white/5 bg-white/5 px-4 py-3">
-                    <p class="text-lg font-semibold text-white">$20</p>
-                    <p class="text-xs text-gray-500">Starting monthly</p>
+                    <p class="text-lg font-semibold text-white">{{ $stat['value'] }}</p>
+                    <p class="text-xs text-gray-500">{{ $stat['label'] }}</p>
                 </div>
-                <div class="rounded-lg border border-white/5 bg-white/5 px-4 py-3">
-                    <p class="text-lg font-semibold text-white">200+</p>
-                    <p class="text-xs text-gray-500">Games supported</p>
-                </div>
-                <div class="rounded-lg border border-white/5 bg-white/5 px-4 py-3">
-                    <p class="text-lg font-semibold text-white">9950X3D</p>
-                    <p class="text-xs text-gray-500">Ryzen CPU</p>
-                </div>
-                <div class="rounded-lg border border-white/5 bg-white/5 px-4 py-3">
-                    <p class="text-lg font-semibold text-white">NVMe</p>
-                    <p class="text-xs text-gray-500">Fast storage</p>
-                </div>
+                @endforeach
             </div>
         </div>
     </section>
@@ -43,8 +47,8 @@
     <section class="border-b border-white/5 py-12">
         <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div class="mb-6">
-                <h2 class="text-lg font-semibold text-white">Featured</h2>
-                <p class="mt-1 text-sm text-gray-500">Hand-picked configurations for a quick start.</p>
+                <h2 class="text-lg font-semibold text-white">{{ StoreSetting::getValue('featured_heading', 'Featured') }}</h2>
+                <p class="mt-1 text-sm text-gray-500">{{ StoreSetting::getValue('featured_subtitle', 'Hand-picked configurations for a quick start.') }}</p>
             </div>
 
             <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
@@ -101,7 +105,7 @@
     <section id="catalog" class="py-12">
         <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div class="mb-6">
-                <h2 class="text-lg font-semibold text-white">All Configurations</h2>
+                <h2 class="text-lg font-semibold text-white">{{ StoreSetting::getValue('catalog_heading', 'All Configurations') }}</h2>
             </div>
 
             {{-- Filters --}}
@@ -214,17 +218,17 @@
     {{-- Features --}}
     <section class="border-t border-white/5 py-12">
         <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <h2 class="mb-6 text-lg font-semibold text-white">Why Shadow Haven</h2>
+            <h2 class="mb-6 text-lg font-semibold text-white">{{ StoreSetting::getValue('features_heading', 'Why Shadow Haven') }}</h2>
 
             <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                 @php
                 $features = [
-                    ['title' => 'Fast Launch', 'desc' => 'Provisioning and checkout wired to minimize the gap between payment and playable server.'],
-                    ['title' => 'Clean Pricing', 'desc' => 'Straightforward catalog, visible monthly costs, and consistent billing.'],
-                    ['title' => '200+ Games', 'desc' => 'A large supported game list with breadth and performance for niche communities.'],
-                    ['title' => 'Real Hardware', 'desc' => 'High-cache Ryzen 9 9950X3D CPU and NVMe storage tuned for game workloads.'],
-                    ['title' => 'DDoS Protected', 'desc' => 'DDoS mitigation and hardened infrastructure as the baseline, not an upsell.'],
-                    ['title' => 'Unified Management', 'desc' => 'Billing, payments, and server management in one clean storefront.'],
+                    ['title' => StoreSetting::getValue('feature1_title', 'Fast Launch'), 'desc' => StoreSetting::getValue('feature1_desc', 'Provisioning and checkout wired to minimize the gap between payment and playable server.')],
+                    ['title' => StoreSetting::getValue('feature2_title', 'Clean Pricing'), 'desc' => StoreSetting::getValue('feature2_desc', 'Straightforward catalog, visible monthly costs, and consistent billing.')],
+                    ['title' => StoreSetting::getValue('feature3_title', '200+ Games'), 'desc' => StoreSetting::getValue('feature3_desc', 'A large supported game list with breadth and performance for niche communities.')],
+                    ['title' => StoreSetting::getValue('feature4_title', 'Real Hardware'), 'desc' => StoreSetting::getValue('feature4_desc', 'High-cache Ryzen 9 9950X3D CPU and NVMe storage tuned for game workloads.')],
+                    ['title' => StoreSetting::getValue('feature5_title', 'DDoS Protected'), 'desc' => StoreSetting::getValue('feature5_desc', 'DDoS mitigation and hardened infrastructure as the baseline, not an upsell.')],
+                    ['title' => StoreSetting::getValue('feature6_title', 'Unified Management'), 'desc' => StoreSetting::getValue('feature6_desc', 'Billing, payments, and server management in one clean storefront.')],
                 ];
                 @endphp
 

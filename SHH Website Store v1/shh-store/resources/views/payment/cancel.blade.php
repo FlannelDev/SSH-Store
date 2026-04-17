@@ -1,4 +1,5 @@
 <x-shh-store::layouts.store title="Payment Cancelled">
+    @php use ShhStore\Models\StoreSetting; @endphp
     <div class="flex min-h-[60vh] items-center justify-center px-4">
         <div class="w-full max-w-md text-center">
             <div class="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-full bg-danger-500/10">
@@ -6,9 +7,9 @@
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                 </svg>
             </div>
-            <h1 class="text-2xl font-bold text-white">Payment Cancelled</h1>
+            <h1 class="text-2xl font-bold text-white">{{ StoreSetting::getValue('payment_cancel_title', 'Payment Cancelled') }}</h1>
             <p class="mt-2 text-sm text-gray-400">
-                Order <span class="font-mono font-medium text-gray-300">{{ $order->order_number }}</span> has been cancelled. You have not been charged.
+                Order <span class="font-mono font-medium text-gray-300">{{ $order->order_number }}</span> has been cancelled. {{ StoreSetting::getValue('payment_cancel_message', 'You have not been charged.') }}
             </p>
 
             <div class="mt-6 flex justify-center gap-3">
