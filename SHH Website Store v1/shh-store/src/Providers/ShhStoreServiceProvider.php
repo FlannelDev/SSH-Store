@@ -2,7 +2,9 @@
 
 namespace ShhStore\Providers;
 
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\ServiceProvider;
 use Livewire\Livewire;
 use ShhStore\Http\Controllers\PaymentController;
@@ -31,6 +33,8 @@ class ShhStoreServiceProvider extends ServiceProvider
             plugin_path('shh-store', 'database', 'migrations')
         );
 
+        $this->runMigrationsIfNeeded();
+
         $this->registerRoutes();
         $this->registerLivewireComponents();
     }
@@ -57,5 +61,31 @@ class ShhStoreServiceProvider extends ServiceProvider
         Livewire::component('shh-store::store-page', StorePage::class);
         Livewire::component('shh-store::product-detail', ProductDetail::class);
         Livewire::component('shh-store::checkout', Checkout::class);
+    }
+
+    protected function runMigrationsIfNeeded(): void
+    {
+        try {
+            $tables = [
+                'shh_store_categories',
+                'shh_store_products',
+                'shh_store_orders',
+                'shh_store_settings',
+            ];
+
+            foreach ($tables as $table) {
+                if (!Schema::hasTable($table)) {
+                    Artisan::call('migrate', [
+                        '--path' => plugin_path('shh-store', 'database', 'migrations'),
+                        '--force' => true,
+                        '--realpath' => true,
+                    ]);
+
+                    break;
+                }
+            }
+        } catch (\Throwable $e) {
+            report($e);
+        }
     }
 }

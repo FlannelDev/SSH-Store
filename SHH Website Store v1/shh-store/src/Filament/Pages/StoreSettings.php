@@ -118,7 +118,7 @@ class StoreSettings extends Page
 
                         Tab::make('General')
                             ->id('general')
-                            ->icon('heroicon-o-cog')
+                            ->icon('heroicon-o-cog-6-tooth')
                             ->schema([
                                 Section::make('General Settings')
                                     ->schema([
@@ -140,6 +140,16 @@ class StoreSettings extends Page
 
     public function save(): void
     {
+        if (!\Illuminate\Support\Facades\Schema::hasTable('shh_store_settings')) {
+            Notification::make()
+                ->danger()
+                ->title('Migration Required')
+                ->body('The shh_store_settings table does not exist. Please run php artisan migrate.')
+                ->send();
+
+            return;
+        }
+
         $data = $this->data;
 
         StoreSetting::setValue('stripe_enabled', !empty($data['stripe_enabled']) ? '1' : '0');
