@@ -31,6 +31,11 @@ class StoreSettings extends Page
         return 'Settings';
     }
 
+    public static function canAccess(): bool
+    {
+        return auth()->user()?->can('view storeSetting') ?? false;
+    }
+
     public function getTitle(): string
     {
         return 'SHH Store Settings';
@@ -140,6 +145,8 @@ class StoreSettings extends Page
 
     public function save(): void
     {
+        $this->authorize('update storeSetting');
+
         if (!\Illuminate\Support\Facades\Schema::hasTable('shh_store_settings')) {
             Notification::make()
                 ->danger()

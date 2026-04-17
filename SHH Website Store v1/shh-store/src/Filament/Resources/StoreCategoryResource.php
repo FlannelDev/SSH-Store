@@ -2,6 +2,7 @@
 
 namespace ShhStore\Filament\Resources;
 
+use Filament\Actions\CreateAction;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
 use Filament\Forms;
@@ -88,6 +89,9 @@ class StoreCategoryResource extends Resource
             ->recordActions([
                 EditAction::make(),
                 DeleteAction::make(),
+            ])
+            ->toolbarActions([
+                CreateAction::make(),
             ]);
     }
 

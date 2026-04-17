@@ -2,7 +2,9 @@
 
 namespace ShhStore\Providers;
 
+use App\Models\Role;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\ServiceProvider;
@@ -11,6 +13,12 @@ use ShhStore\Http\Controllers\PaymentController;
 use ShhStore\Livewire\Checkout;
 use ShhStore\Livewire\ProductDetail;
 use ShhStore\Livewire\StorePage;
+use ShhStore\Models\StoreCategory;
+use ShhStore\Models\StoreOrder;
+use ShhStore\Models\StoreProduct;
+use ShhStore\Policies\StoreCategoryPolicy;
+use ShhStore\Policies\StoreOrderPolicy;
+use ShhStore\Policies\StoreProductPolicy;
 
 class ShhStoreServiceProvider extends ServiceProvider
 {
@@ -35,8 +43,32 @@ class ShhStoreServiceProvider extends ServiceProvider
 
         $this->ensureTablesExist();
 
+        $this->registerPermissions();
+        $this->registerPolicies();
         $this->registerRoutes();
         $this->registerLivewireComponents();
+    }
+
+    protected function registerPermissions(): void
+    {
+        Role::registerCustomDefaultPermissions('storeCategory');
+        Role::registerCustomDefaultPermissions('storeProduct');
+        Role::registerCustomDefaultPermissions('storeOrder');
+        Role::registerCustomPermissions([
+            'storeSetting' => ['view', 'update'],
+        ]);
+
+        Role::registerCustomModelIcon('storeCategory', 'heroicon-o-tag');
+        Role::registerCustomModelIcon('storeProduct', 'heroicon-o-server-stack');
+        Role::registerCustomModelIcon('storeOrder', 'heroicon-o-shopping-cart');
+        Role::registerCustomModelIcon('storeSetting', 'heroicon-o-cog-6-tooth');
+    }
+
+    protected function registerPolicies(): void
+    {
+        Gate::policy(StoreCategory::class, StoreCategoryPolicy::class);
+        Gate::policy(StoreProduct::class, StoreProductPolicy::class);
+        Gate::policy(StoreOrder::class, StoreOrderPolicy::class);
     }
 
     protected function registerRoutes(): void
