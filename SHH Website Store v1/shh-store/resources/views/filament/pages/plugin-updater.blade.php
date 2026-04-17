@@ -27,14 +27,14 @@
             @if($error)
                 <div class="rounded-lg border border-danger-300 bg-danger-50 p-4 dark:border-danger-600 dark:bg-danger-500/10">
                     <div class="flex items-center gap-3">
-                        <x-heroicon-o-exclamation-triangle class="h-5 w-5 text-danger-500" />
+                        <x-filament::icon icon="heroicon-o-exclamation-triangle" class="h-5 w-5 text-danger-500" />
                         <p class="text-sm font-medium text-danger-700 dark:text-danger-400">{{ $error }}</p>
                     </div>
                 </div>
             @elseif($updateAvailable)
                 <div class="rounded-lg border border-warning-300 bg-warning-50 p-4 dark:border-warning-600 dark:bg-warning-500/10">
                     <div class="flex items-center gap-3">
-                        <x-heroicon-o-arrow-up-circle class="h-5 w-5 text-warning-500" />
+                        <x-filament::icon icon="heroicon-o-arrow-up-circle" class="h-5 w-5 text-warning-500" />
                         <div>
                             <p class="text-sm font-medium text-warning-700 dark:text-warning-400">
                                 Update available: v{{ $latestVersion }}
@@ -58,7 +58,7 @@
             @else
                 <div class="rounded-lg border border-success-300 bg-success-50 p-4 dark:border-success-600 dark:bg-success-500/10">
                     <div class="flex items-center gap-3">
-                        <x-heroicon-o-check-circle class="h-5 w-5 text-success-500" />
+                        <x-filament::icon icon="heroicon-o-check-circle" class="h-5 w-5 text-success-500" />
                         <p class="text-sm font-medium text-success-700 dark:text-success-400">
                             You are running the latest version (v{{ $currentVersion }}).
                         </p>

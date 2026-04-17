@@ -3,12 +3,12 @@
 namespace ShhStore\Filament\Pages;
 
 use Filament\Actions\Action;
-use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
-use Filament\Forms\Form;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Schema;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\File;
 
@@ -42,10 +42,11 @@ class StoreSettings extends Page
         ]);
     }
 
-    public function form(Form $form): Form
+    public function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
+        return $schema
+            ->statePath('data')
+            ->components([
                 Section::make('Stripe')
                     ->description('Configure your Stripe payment gateway credentials.')
                     ->icon('heroicon-o-credit-card')
@@ -94,8 +95,7 @@ class StoreSettings extends Page
                             ->default('sandbox'),
                     ])
                     ->columns(1),
-            ])
-            ->statePath('data');
+            ]);
     }
 
     protected function getHeaderActions(): array

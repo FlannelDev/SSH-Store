@@ -3,9 +3,9 @@
         {{ $this->form }}
 
         <div class="flex justify-end">
-            <x-filament::button type="submit">
+            <button type="submit" class="fi-btn fi-btn-size-md inline-flex items-center justify-center gap-1 rounded-lg bg-primary-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900">
                 Save Settings
-            </x-filament::button>
+            </button>
         </div>
     </form>
 </x-filament-panels::page>
