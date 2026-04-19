@@ -12,4 +12,8 @@ return [
         'client_secret' => env('SHH_PAYPAL_CLIENT_SECRET', ''),
         'mode' => env('SHH_PAYPAL_MODE', 'sandbox'),
     ],
+
+    'billing' => [
+        'suspend_after_days' => (int) env('SHH_BILLING_SUSPEND_AFTER_DAYS', 2),
+    ],
 ];

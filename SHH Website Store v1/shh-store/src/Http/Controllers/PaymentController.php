@@ -28,6 +28,8 @@ class PaymentController extends Controller
                             'stripe_customer' => $session->customer,
                         ]),
                     ]);
+
+                    $order->releaseNonPaymentSuspension();
                 }
             } catch (\Exception $e) {
                 Log::error('SHH Store: Stripe session verification failed', [
@@ -45,7 +47,7 @@ class PaymentController extends Controller
         $order = StoreOrder::where('order_number', $order)->firstOrFail();
 
         if ($order->status === 'pending') {
-            $order->update(['status' => 'cancelled']);
+            $order->cancel();
         }
 
         return view('shh-store::payment.cancel', ['order' => $order]);
@@ -97,6 +99,8 @@ class PaymentController extends Controller
                         'paypal_payer' => $captureResult['payer'] ?? null,
                     ]),
                 ]);
+
+                $order->releaseNonPaymentSuspension();
 
                 return view('shh-store::payment.success', ['order' => $order]);
             }
@@ -151,6 +155,8 @@ class PaymentController extends Controller
                             'webhook_processed' => true,
                         ]),
                     ]);
+
+                    $order->releaseNonPaymentSuspension();
                 }
                 break;
 
@@ -159,7 +165,7 @@ class PaymentController extends Controller
                 $order = StoreOrder::where('payment_id', $session->id)->first();
 
                 if ($order && $order->status === 'pending') {
-                    $order->update(['status' => 'cancelled']);
+                    $order->cancel();
                 }
                 break;
         }

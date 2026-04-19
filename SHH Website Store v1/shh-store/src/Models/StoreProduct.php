@@ -52,6 +52,15 @@ class StoreProduct extends Model
         return $this->hasMany(StoreOrder::class, 'product_id');
     }
 
+    public function calculatePrice(string $billingCycle = 'monthly'): float
+    {
+        return match ($billingCycle) {
+            'quarterly' => (float) ($this->price_quarterly ?: $this->price_monthly * 3),
+            'annually' => (float) ($this->price_annually ?: $this->price_monthly * 12),
+            default => (float) $this->price_monthly,
+        };
+    }
+
     public function scopeVisible($query)
     {
         return $query->where('is_visible', true);

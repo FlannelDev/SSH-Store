@@ -2,6 +2,8 @@
 
 namespace ShhStore\Filament\Resources;
 
+use App\Models\Node;
+use App\Models\Server;
 use Filament\Actions\EditAction;
 use Filament\Forms;
 use Filament\Resources\Resource;
@@ -52,6 +54,34 @@ class StoreOrderResource extends Resource
                             ->disabled(),
                         Forms\Components\TextInput::make('transaction_id')
                             ->disabled(),
+                        Forms\Components\Select::make('server_id')
+                            ->label('Linked Server')
+                            ->options(fn () => Server::query()->orderBy('name')->pluck('name', 'id'))
+                            ->searchable()
+                            ->preload()
+                            ->live()
+                            ->afterStateUpdated(function ($state, Forms\Set $set): void {
+                                if (blank($state)) {
+                                    return;
+                                }
+
+                                $nodeId = Server::query()->whereKey($state)->value('node_id');
+                                if ($nodeId) {
+                                    $set('node_id', $nodeId);
+                                }
+                            }),
+                        Forms\Components\Select::make('node_id')
+                            ->label('Linked Node')
+                            ->options(fn () => Node::query()->orderBy('name')->pluck('name', 'id'))
+                            ->searchable()
+                            ->preload(),
+                        Forms\Components\DateTimePicker::make('bill_due_at')
+                            ->label('Bill Due At')
+                            ->seconds(false),
+                        Forms\Components\DateTimePicker::make('suspended_for_nonpayment_at')
+                            ->label('Suspended For Non-Payment At')
+                            ->disabled()
+                            ->seconds(false),
                     ])->columns(2),
 
                 Section::make('Customer Info')
@@ -76,6 +106,12 @@ class StoreOrderResource extends Resource
                     ->sortable(),
                 Tables\Columns\TextColumn::make('product.name')
                     ->sortable(),
+                Tables\Columns\TextColumn::make('server.name')
+                    ->label('Server')
+                    ->toggleable(isToggledHiddenByDefault: true),
+                Tables\Columns\TextColumn::make('node.name')
+                    ->label('Node')
+                    ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('amount')
                     ->money('usd')
                     ->sortable(),
@@ -96,6 +132,16 @@ class StoreOrderResource extends Resource
                     ->dateTime()
                     ->sortable()
                     ->toggleable(),
+                Tables\Columns\TextColumn::make('bill_due_at')
+                    ->dateTime()
+                    ->sortable()
+                    ->toggleable()
+                    ->color(fn ($state) => $state && $state->isPast() ? 'danger' : null),
+                Tables\Columns\TextColumn::make('suspended_for_nonpayment_at')
+                    ->label('Suspended At')
+                    ->dateTime()
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable(),

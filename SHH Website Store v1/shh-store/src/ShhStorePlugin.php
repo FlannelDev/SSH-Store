@@ -5,7 +5,9 @@ namespace ShhStore;
 use Filament\Contracts\Plugin;
 use Filament\Panel;
 use ShhStore\Filament\Pages\StoreSettings;
+use ShhStore\Filament\Resources\ClientResource;
 use ShhStore\Filament\Resources\StoreCategoryResource;
+use ShhStore\Filament\Resources\StoreCouponResource;
 use ShhStore\Filament\Resources\StoreOrderResource;
 use ShhStore\Filament\Resources\StoreProductResource;
 
@@ -20,7 +22,9 @@ class ShhStorePlugin implements Plugin
     {
         $panel
             ->resources([
+                ClientResource::class,
                 StoreCategoryResource::class,
+                StoreCouponResource::class,
                 StoreProductResource::class,
                 StoreOrderResource::class,
             ])

@@ -32,11 +32,7 @@ class Checkout extends Component
 
     public function getAmount(): float
     {
-        return match ($this->billingCycle) {
-            'quarterly' => (float) ($this->product->price_quarterly ?: $this->product->price_monthly * 3),
-            'annually' => (float) ($this->product->price_annually ?: $this->product->price_monthly * 12),
-            default => (float) $this->product->price_monthly,
-        };
+        return $this->product->calculatePrice($this->billingCycle);
     }
 
     public function getFormattedPrice(): string
@@ -106,7 +102,8 @@ class Checkout extends Component
 
             $this->redirect($session->url);
         } catch (\Exception $e) {
-            $order->update(['status' => 'cancelled', 'meta' => ['error' => $e->getMessage()]]);
+            $order->cancel();
+            $order->update(['meta' => ['error' => $e->getMessage()]]);
             $this->processing = false;
             session()->flash('error', 'Payment initialization failed. Please try again.');
         }
@@ -186,11 +183,13 @@ class Checkout extends Component
                 }
             }
 
-            $order->update(['status' => 'cancelled', 'meta' => ['error' => 'Failed to create PayPal order', 'response' => $paypalOrder]]);
+            $order->cancel();
+            $order->update(['meta' => ['error' => 'Failed to create PayPal order', 'response' => $paypalOrder]]);
             $this->processing = false;
             session()->flash('error', 'PayPal initialization failed. Please try again.');
         } catch (\Exception $e) {
-            $order->update(['status' => 'cancelled', 'meta' => ['error' => $e->getMessage()]]);
+            $order->cancel();
+            $order->update(['meta' => ['error' => $e->getMessage()]]);
             $this->processing = false;
             session()->flash('error', 'PayPal initialization failed. Please try again.');
         }

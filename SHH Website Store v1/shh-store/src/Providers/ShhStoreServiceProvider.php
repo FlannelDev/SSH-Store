@@ -13,6 +13,7 @@ use ShhStore\Http\Controllers\PaymentController;
 use ShhStore\Livewire\Checkout;
 use ShhStore\Livewire\ProductDetail;
 use ShhStore\Livewire\StorePage;
+use ShhStore\Console\Commands\ProcessUnpaidSuspensionsCommand;
 use ShhStore\Models\StoreCategory;
 use ShhStore\Models\StoreOrder;
 use ShhStore\Models\StoreProduct;
@@ -42,6 +43,12 @@ class ShhStoreServiceProvider extends ServiceProvider
         );
 
         $this->ensureTablesExist();
+
+        if ($this->app->runningInConsole()) {
+            $this->commands([
+                ProcessUnpaidSuspensionsCommand::class,
+            ]);
+        }
 
         $this->registerPermissions();
         $this->registerPolicies();

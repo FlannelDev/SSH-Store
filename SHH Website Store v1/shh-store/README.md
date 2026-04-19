@@ -1,21 +1,30 @@
 # SHH Store — Pelican Panel Plugin
 
-A game server hosting storefront plugin for [Pelican Panel](https://pelican.dev). Adds a full store with product catalog, checkout, and Stripe/PayPal payment processing.
+Game server storefront plugin for [Pelican Panel](https://pelican.dev) with checkout, payments, order management, coupon support, and unpaid-billing suspension controls.
 
 ## Features
 
-- Product catalog with categories, search, filtering, and sorting
-- Featured products and billing cycle options (monthly/quarterly/annual)
-- Stripe and PayPal payment integration
-- Order management via Filament admin panel
-- Dark-themed storefront UI with Tailwind CSS
-- Livewire-powered dynamic pages
+- Product catalog with categories and billing cycle pricing (monthly/quarterly/annually)
+- Stripe + PayPal checkout integration
+- Coupon management (`min_order`, usage limits, first-month-only support)
+- Filament admin resources for:
+	- Clients
+	- Categories
+	- Products
+	- Orders
+	- Coupons
+	- Store settings
+- Order-to-server/node linking from admin
+- Unpaid billing suspension workflow:
+	- Configurable suspension delay in days
+	- Manual suspend/unsuspend actions
+	- Batch processing command for overdue unpaid linked servers
+	- Linked server visibility from client profiles
 
 ## Installation
 
-1. Clone or download this repository and place it as `plugins/shh-store/` in your Pelican Panel installation directory.
-
-2. Install the plugin via the Pelican admin panel (Settings → Plugins), or manually add the required environment variables to your `.env`:
+1. Place this plugin as `plugins/shh-store/` in your Pelican installation.
+2. Ensure environment values are set in `.env`:
 
 ```env
 SHH_STRIPE_KEY=pk_test_...
@@ -24,6 +33,7 @@ SHH_STRIPE_WEBHOOK_SECRET=whsec_...
 SHH_PAYPAL_CLIENT_ID=...
 SHH_PAYPAL_CLIENT_SECRET=...
 SHH_PAYPAL_MODE=sandbox
+SHH_BILLING_SUSPEND_AFTER_DAYS=2
 ```
 
 3. Run migrations:
@@ -32,7 +42,7 @@ SHH_PAYPAL_MODE=sandbox
 php artisan migrate
 ```
 
-4. (Optional) Seed sample products:
+4. (Optional) seed sample catalog data:
 
 ```bash
 php artisan db:seed --class="Database\Seeders\SHHStoreSeeder"
@@ -40,34 +50,49 @@ php artisan db:seed --class="Database\Seeders\SHHStoreSeeder"
 
 ## Routes
 
+> Current plugin routes are under `/storestaging`.
+
 | Route | Path | Description |
 |-------|------|-------------|
-| `shh-store.store` | `/store` | Main storefront catalog |
-| `shh-store.product` | `/store/{slug}` | Product detail page |
-| `shh-store.checkout` | `/store/checkout/{slug}` | Checkout page |
-| `shh-store.payment.success` | `/store/payment/success/{order}` | Payment success |
-| `shh-store.payment.cancel` | `/store/payment/cancel/{order}` | Payment cancelled |
-| `shh-store.paypal.capture` | `/store/payment/paypal/capture/{order}` | PayPal capture callback |
+| `shh-store.store` | `/storestaging` | Storefront catalog |
+| `shh-store.product` | `/storestaging/product/{slug}` | Product detail |
+| `shh-store.checkout` | `/storestaging/checkout/{slug}/{cycle?}` | Checkout |
+| `shh-store.payment.success` | `/storestaging/payment/success/{order}` | Payment success |
+| `shh-store.payment.cancel` | `/storestaging/payment/cancel/{order}` | Payment cancelled |
+| `shh-store.paypal.capture` | `/storestaging/payment/paypal/capture/{order}` | PayPal capture callback |
 | `shh-store.webhooks.stripe` | `/webhooks/shh-store/stripe` | Stripe webhook endpoint |
 
-## Admin Panel
+## Unpaid Suspension Workflow
 
-The plugin adds a **Store** navigation group in the Filament admin panel with:
+- Configure delay in admin: **Store → Settings → General → Suspend After Unpaid Days**
+- Link a `Server` and optional `Node` to an order in **Store → Orders**
+- Process overdue linked orders manually from **Store → Orders → Process Unpaid Suspensions**
+- CLI equivalent:
 
-- **Categories** — Manage product categories
-- **Products** — Manage server configurations and pricing
-- **Orders** — View and manage customer orders
+```bash
+php artisan shh-store:process-unpaid-suspensions
+```
+
+- Client-level visibility/actions:
+	- **Store → Clients → View → Linked Servers**
+	- Includes overdue status + eligibility badge, suspend/unsuspend actions, and order shortcut
 
 ## Configuration
 
-Config is published to `config/shh-store.php`. All values are read from environment variables with `SHH_` prefix.
+Primary config lives in `config/shh-store.php` and supports:
+
+- Stripe keys/webhook secret
+- PayPal client credentials/mode
+- Billing suspension default (`billing.suspend_after_days`)
+
+Most payment values are managed in **Store → Settings** and persisted to `shh_store_settings`.
 
 ## Requirements
 
-- Pelican Panel (latest)
+- Pelican Panel (current compatible build)
 - PHP 8.2+
-- `stripe/stripe-php` (auto-installed via plugin.json)
-- `srmklive/paypal` (auto-installed via plugin.json)
+- `stripe/stripe-php`
+- `srmklive/paypal`
 
 ## License
 

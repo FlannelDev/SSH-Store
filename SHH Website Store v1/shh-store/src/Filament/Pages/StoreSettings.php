@@ -62,6 +62,7 @@ class StoreSettings extends Page
 
             // General
             'currency' => (string) StoreSetting::getValue('currency', 'USD'),
+            'billing_suspend_after_days' => max(0, (int) StoreSetting::getValue('billing_suspend_after_days', (string) config('shh-store.billing.suspend_after_days', 2))),
 
             // Hero
             'hero_title' => (string) StoreSetting::getValue('hero_title', 'Game Servers'),
@@ -189,6 +190,12 @@ class StoreSettings extends Page
                                                 'AUD' => 'AUD — Australian Dollar',
                                             ])
                                             ->default('USD'),
+                                            TextInput::make('billing_suspend_after_days')
+                                                ->label('Suspend After Unpaid Days')
+                                                ->numeric()
+                                                ->minValue(0)
+                                                ->default(2)
+                                                ->helperText('How many days after bill due date a linked server is suspended for non-payment. 0 = suspend on due date.'),
                                     ]),
                             ]),
 
@@ -376,6 +383,7 @@ class StoreSettings extends Page
         StoreSetting::setValue('paypal_sandbox', !empty($data['paypal_sandbox']) ? '1' : '0');
 
         StoreSetting::setValue('currency', strtoupper(trim((string) ($data['currency'] ?? 'USD'))));
+        StoreSetting::setValue('billing_suspend_after_days', (string) max(0, (int) ($data['billing_suspend_after_days'] ?? 2)));
 
         // Branding
         $textKeys = [
