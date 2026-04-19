@@ -87,25 +87,14 @@ Primary config lives in `config/shh-store.php` and supports:
 
 Most payment values are managed in **Store → Settings** and persisted to `shh_store_settings`.
 
-## Versioning Workflow
+## Updates
 
-After each plugin code change, bump version metadata so `plugin.json` and `update.json` stay in sync.
+Plugin update checks are handled through the linked GitHub update manifest:
 
-```bash
-php artisan shh-store:bump-version patch
-```
+- `plugin.json` → `update_url`
+- `update.json` → latest published plugin version + download URL
 
-Optional bump types:
-
-```bash
-php artisan shh-store:bump-version minor
-php artisan shh-store:bump-version major
-```
-
-This command updates both:
-
-- `shh-store/plugin.json` (`version`)
-- `shh-store/update.json` (`*.version`)
+No plugin CLI command is required for update checks. Keep `update.json` and GitHub releases current for deployments.
 
 ## Requirements
 

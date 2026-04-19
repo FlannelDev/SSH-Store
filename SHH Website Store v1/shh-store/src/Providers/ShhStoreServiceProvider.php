@@ -13,7 +13,6 @@ use ShhStore\Http\Controllers\PaymentController;
 use ShhStore\Livewire\Checkout;
 use ShhStore\Livewire\ProductDetail;
 use ShhStore\Livewire\StorePage;
-use ShhStore\Console\Commands\BumpPluginVersionCommand;
 use ShhStore\Console\Commands\ProcessUnpaidSuspensionsCommand;
 use ShhStore\Models\StoreCategory;
 use ShhStore\Models\StoreOrder;
@@ -47,7 +46,6 @@ class ShhStoreServiceProvider extends ServiceProvider
 
         if ($this->app->runningInConsole()) {
             $this->commands([
-                BumpPluginVersionCommand::class,
                 ProcessUnpaidSuspensionsCommand::class,
             ]);
         }

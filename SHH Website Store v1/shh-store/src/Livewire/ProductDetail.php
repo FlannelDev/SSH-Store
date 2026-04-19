@@ -20,15 +20,7 @@ class ProductDetail extends Component
 
     public function getActivePrice(): string
     {
-        return match ($this->billingCycle) {
-            'quarterly' => $this->product->price_quarterly
-                ? '$' . number_format((float) $this->product->price_quarterly, 2)
-                : '$' . number_format((float) $this->product->price_monthly * 3, 2),
-            'annually' => $this->product->price_annually
-                ? '$' . number_format((float) $this->product->price_annually, 2)
-                : '$' . number_format((float) $this->product->price_monthly * 12, 2),
-            default => '$' . number_format((float) $this->product->price_monthly, 2),
-        };
+        return '$' . number_format($this->product->calculatePrice($this->billingCycle), 2);
     }
 
     public function render()

@@ -58,11 +58,13 @@ class StorePage extends Component
             $productsQuery->featured();
         }
 
+        $effectiveMonthly = 'COALESCE(NULLIF(monthly_fee_per_slot, 0), price_monthly)';
+
         $productsQuery = match ($this->sortBy) {
-            'price_desc' => $productsQuery->orderByDesc('price_monthly'),
+            'price_desc' => $productsQuery->orderByRaw("{$effectiveMonthly} DESC"),
             'name_asc' => $productsQuery->orderBy('name'),
             'name_desc' => $productsQuery->orderByDesc('name'),
-            default => $productsQuery->orderBy('price_monthly'),
+            default => $productsQuery->orderByRaw("{$effectiveMonthly} ASC"),
         };
 
         $products = $productsQuery->get();

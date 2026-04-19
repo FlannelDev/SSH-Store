@@ -89,8 +89,8 @@
 
                             <div class="mt-auto pt-3">
                                 <div class="border-t border-white/5 pt-3">
-                                    <span class="text-base font-semibold text-white">${{ number_format((float) $product->price_monthly, 2) }}</span>
-                                    <span class="text-xs text-gray-500">/mo</span>
+                                    <span class="text-base font-semibold text-white">${{ number_format($product->calculatePrice('monthly'), 2) }}</span>
+                                    <span class="text-xs text-gray-500">{{ $product->cyclePriceSuffix('monthly') }}</span>
                                 </div>
                             </div>
                         </div>
@@ -196,8 +196,8 @@
                                 <div class="flex items-baseline justify-between border-t border-white/5 pt-3">
                                     <span class="text-xs text-gray-500">Monthly</span>
                                     <div>
-                                        <span class="text-base font-semibold text-white">${{ number_format((float) $product->price_monthly, 2) }}</span>
-                                        <span class="text-xs text-gray-500">/mo</span>
+                                        <span class="text-base font-semibold text-white">${{ number_format($product->calculatePrice('monthly'), 2) }}</span>
+                                        <span class="text-xs text-gray-500">{{ $product->cyclePriceSuffix('monthly') }}</span>
                                     </div>
                                 </div>
                             </div>

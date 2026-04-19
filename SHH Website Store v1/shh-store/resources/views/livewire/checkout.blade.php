@@ -62,6 +62,22 @@
                         <h3 class="text-xs font-medium uppercase tracking-wider text-gray-400">Your Information</h3>
                     </div>
                     <div class="space-y-4 p-5">
+                        @if($product->hasPerSlotFee())
+                            <div>
+                                <label for="slots" class="block text-xs font-medium text-gray-400">Server Slots</label>
+                                <input type="number" id="slots"
+                                       min="1"
+                                       max="128"
+                                       wire:model.live="slots"
+                                       class="mt-1.5 w-full rounded-lg border border-white/10 bg-gray-950 px-4 py-2.5 text-sm text-white placeholder-gray-500 transition focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
+                                       placeholder="10">
+                                <p class="mt-1 text-[11px] text-gray-600">Select between 1 and 128 slots.</p>
+                                @error('slots')
+                                    <p class="mt-1 text-xs text-danger-400">{{ $message }}</p>
+                                @enderror
+                            </div>
+                        @endif
+
                         <div>
                             <label for="customerName" class="block text-xs font-medium text-gray-400">Full Name</label>
                             <input type="text" id="customerName"
@@ -146,6 +162,16 @@
 
                     {{-- Total --}}
                     <div class="mt-3 rounded-lg border border-white/5 bg-white/5 p-4">
+                        @if($product->hasPerSlotFee())
+                            <div class="mb-2 flex items-center justify-between text-xs text-gray-500">
+                                <span>Unit Rate</span>
+                                <span>${{ number_format($product->calculatePrice($billingCycle), 2) }} {{ $product->cyclePriceSuffix($billingCycle) }}</span>
+                            </div>
+                            <div class="mb-2 flex items-center justify-between text-xs text-gray-500">
+                                <span>Slots</span>
+                                <span>{{ max(1, (int) $slots) }}</span>
+                            </div>
+                        @endif
                         <div class="flex items-center justify-between">
                             <span class="text-sm text-gray-400">Total</span>
                             <span class="text-lg font-bold text-white">{{ $formattedPrice }}</span>

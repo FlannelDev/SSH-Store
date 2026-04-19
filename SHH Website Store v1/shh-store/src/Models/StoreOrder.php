@@ -18,6 +18,7 @@ class StoreOrder extends Model
         'user_id',
         'product_id',
         'billing_cycle',
+        'slots',
         'amount',
         'currency',
         'status',
@@ -39,6 +40,7 @@ class StoreOrder extends Model
     {
         return [
             'amount' => 'decimal:2',
+            'slots' => 'integer',
             'meta' => 'array',
             'paid_at' => 'datetime',
             'bill_due_at' => 'datetime',

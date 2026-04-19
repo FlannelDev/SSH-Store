@@ -51,6 +51,9 @@ class StoreOrderResource extends Resource
                             ->prefix('$'),
                         Forms\Components\TextInput::make('billing_cycle')
                             ->disabled(),
+                        Forms\Components\TextInput::make('slots')
+                            ->label('Slots')
+                            ->disabled(),
                         Forms\Components\TextInput::make('payment_method')
                             ->disabled(),
                         Forms\Components\TextInput::make('transaction_id')
@@ -116,6 +119,10 @@ class StoreOrderResource extends Resource
                 Tables\Columns\TextColumn::make('amount')
                     ->money('usd')
                     ->sortable(),
+                Tables\Columns\TextColumn::make('slots')
+                    ->badge()
+                    ->placeholder('—')
+                    ->toggleable(),
                 Tables\Columns\TextColumn::make('billing_cycle')
                     ->badge(),
                 Tables\Columns\TextColumn::make('status')

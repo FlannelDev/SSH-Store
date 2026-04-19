@@ -10,6 +10,7 @@ class Checkout extends Component
 {
     public StoreProduct $product;
     public string $billingCycle = 'monthly';
+    public int $slots = 10;
     public string $customerEmail = '';
     public string $customerName = '';
     public string $paymentMethod = '';
@@ -28,11 +29,31 @@ class Checkout extends Component
             $this->customerEmail = auth()->user()->email;
             $this->customerName = auth()->user()->name;
         }
+
+        $this->slots = $this->product->hasPerSlotFee()
+            ? $this->product->getResolvedDefaultSlots()
+            : 1;
+    }
+
+    public function updatedSlots($value): void
+    {
+        $this->slots = $this->normalizeSlots((int) $value);
+    }
+
+    protected function normalizeSlots(int $slots): int
+    {
+        return min(128, max(1, $slots));
     }
 
     public function getAmount(): float
     {
-        return $this->product->calculatePrice($this->billingCycle);
+        $unitPrice = $this->product->calculatePrice($this->billingCycle);
+
+        if ($this->product->hasPerSlotFee()) {
+            return $unitPrice * $this->normalizeSlots($this->slots);
+        }
+
+        return $unitPrice;
     }
 
     public function getFormattedPrice(): string
@@ -42,6 +63,14 @@ class Checkout extends Component
 
     public function getCycleLabel(): string
     {
+        if ($this->product->hasPerSlotFee()) {
+            return match ($this->billingCycle) {
+                'quarterly' => 'per slot per quarter',
+                'annually' => 'per slot per year',
+                default => 'per slot per month',
+            };
+        }
+
         return match ($this->billingCycle) {
             'quarterly' => 'per quarter',
             'annually' => 'per year',
@@ -54,6 +83,7 @@ class Checkout extends Component
         $this->validate([
             'customerEmail' => 'required|email|max:255',
             'customerName' => 'required|string|max:255',
+            'slots' => $this->product->hasPerSlotFee() ? 'required|integer|min:1|max:128' : 'nullable|integer|min:1|max:128',
         ]);
 
         $this->processing = true;
@@ -64,6 +94,7 @@ class Checkout extends Component
             'user_id' => auth()->id(),
             'product_id' => $this->product->id,
             'billing_cycle' => $this->billingCycle,
+            'slots' => $this->product->hasPerSlotFee() ? $this->normalizeSlots($this->slots) : null,
             'amount' => $this->getAmount(),
             'currency' => 'USD',
             'status' => 'pending',
@@ -83,7 +114,7 @@ class Checkout extends Component
                         'currency' => 'usd',
                         'product_data' => [
                             'name' => $this->product->name,
-                            'description' => $this->product->tier . ' — ' . $this->billingCycle . ' billing',
+                            'description' => $this->product->tier . ' — ' . ($this->product->hasPerSlotFee() ? $this->normalizeSlots($this->slots) . ' slots · ' : '') . $this->billingCycle . ' billing',
                         ],
                         'unit_amount' => (int) round($this->getAmount() * 100),
                     ],
@@ -114,6 +145,7 @@ class Checkout extends Component
         $this->validate([
             'customerEmail' => 'required|email|max:255',
             'customerName' => 'required|string|max:255',
+            'slots' => $this->product->hasPerSlotFee() ? 'required|integer|min:1|max:128' : 'nullable|integer|min:1|max:128',
         ]);
 
         $this->processing = true;
@@ -124,6 +156,7 @@ class Checkout extends Component
             'user_id' => auth()->id(),
             'product_id' => $this->product->id,
             'billing_cycle' => $this->billingCycle,
+            'slots' => $this->product->hasPerSlotFee() ? $this->normalizeSlots($this->slots) : null,
             'amount' => $this->getAmount(),
             'currency' => 'USD',
             'status' => 'pending',
@@ -158,7 +191,7 @@ class Checkout extends Component
                 'intent' => 'CAPTURE',
                 'purchase_units' => [[
                     'reference_id' => $order->order_number,
-                    'description' => $this->product->name . ' — ' . $this->billingCycle . ' billing',
+                    'description' => $this->product->name . ' — ' . ($this->product->hasPerSlotFee() ? $this->normalizeSlots($this->slots) . ' slots · ' : '') . $this->billingCycle . ' billing',
                     'amount' => [
                         'currency_code' => 'USD',
                         'value' => number_format($this->getAmount(), 2, '.', ''),

@@ -108,11 +108,19 @@
                         <div class="mb-5 text-center">
                             <p class="text-3xl font-bold text-white">{{ $activePrice }}</p>
                             <p class="mt-1 text-xs text-gray-500">
-                                @switch($billingCycle)
-                                    @case('quarterly') per quarter @break
-                                    @case('annually') per year @break
-                                    @default per month
-                                @endswitch
+                                @if($product->hasPerSlotFee())
+                                    @switch($billingCycle)
+                                        @case('quarterly') per slot per quarter @break
+                                        @case('annually') per slot per year @break
+                                        @default per slot per month
+                                    @endswitch
+                                @else
+                                    @switch($billingCycle)
+                                        @case('quarterly') per quarter @break
+                                        @case('annually') per year @break
+                                        @default per month
+                                    @endswitch
+                                @endif
                             </p>
                         </div>
 
@@ -185,8 +193,8 @@
                                 @endif
                             </div>
                             <div class="mt-auto border-t border-white/5 pt-3 mt-3">
-                                <span class="text-base font-semibold text-white">${{ number_format((float) $related->price_monthly, 2) }}</span>
-                                <span class="text-xs text-gray-500">/mo</span>
+                                <span class="text-base font-semibold text-white">${{ number_format($related->calculatePrice('monthly'), 2) }}</span>
+                                <span class="text-xs text-gray-500">{{ $related->cyclePriceSuffix('monthly') }}</span>
                             </div>
                         </div>
                     </a>

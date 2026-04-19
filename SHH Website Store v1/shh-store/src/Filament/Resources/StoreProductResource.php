@@ -93,6 +93,18 @@ class StoreProductResource extends Resource
                                     ->numeric()
                                     ->prefix('$')
                                     ->required(),
+                                Forms\Components\TextInput::make('monthly_fee_per_slot')
+                                    ->label('Monthly Fee per Slot')
+                                    ->numeric()
+                                    ->prefix('$')
+                                    ->helperText('Optional: when set, storefront/checkout pricing displays per-slot monthly rates.'),
+                                Forms\Components\TextInput::make('default_slots')
+                                    ->label('Default Slots')
+                                    ->numeric()
+                                    ->minValue(1)
+                                    ->maxValue(128)
+                                    ->placeholder('10')
+                                    ->helperText('Used to prefill checkout slot selection for per-slot products.'),
                                 Forms\Components\TextInput::make('price_quarterly')
                                     ->label('Quarterly Price')
                                     ->numeric()
@@ -144,6 +156,17 @@ class StoreProductResource extends Resource
                     ->money('usd')
                     ->sortable()
                     ->label('Price/mo'),
+                Tables\Columns\TextColumn::make('monthly_fee_per_slot')
+                    ->money('usd')
+                    ->sortable()
+                    ->label('Fee/slot/mo')
+                    ->placeholder('—')
+                    ->toggleable(),
+                Tables\Columns\TextColumn::make('default_slots')
+                    ->label('Default Slots')
+                    ->sortable()
+                    ->placeholder('—')
+                    ->toggleable(),
                 Tables\Columns\IconColumn::make('is_featured')
                     ->boolean(),
                 Tables\Columns\IconColumn::make('is_visible')
