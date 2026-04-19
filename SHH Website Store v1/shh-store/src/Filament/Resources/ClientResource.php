@@ -12,6 +12,7 @@ use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\DB;
 use ShhStore\Filament\Resources\ClientResource\Pages;
 use ShhStore\Filament\Resources\ClientResource\RelationManagers\LinkedServersRelationManager;
 use ShhStore\Filament\Resources\ClientResource\RelationManagers\OrdersRelationManager;
@@ -81,6 +82,29 @@ class ClientResource extends Resource
                     ->whereIn('status', ['active', 'paid', 'unpaid']),
                 'next_linked_bill_due_at'
             )
+            ->selectSub(
+                StoreOrder::selectRaw('COUNT(DISTINCT node_id)')
+                    ->whereColumn('user_id', 'users.id')
+                    ->whereNotNull('server_id')
+                    ->whereNotNull('node_id'),
+                'connected_nodes_count'
+            )
+            ->selectSub(
+                DB::table('shh_store_orders')
+                    ->join('nodes', 'nodes.id', '=', 'shh_store_orders.node_id')
+                    ->selectRaw('MIN(nodes.name)')
+                    ->whereColumn('shh_store_orders.user_id', 'users.id')
+                    ->whereNotNull('shh_store_orders.server_id')
+                    ->whereNotNull('shh_store_orders.node_id'),
+                'connected_node_name'
+            )
+            ->selectSub(
+                StoreOrder::selectRaw('COALESCE(SUM(amount), 0)')
+                    ->whereColumn('user_id', 'users.id')
+                    ->whereNotNull('server_id')
+                    ->whereIn('status', ['active', 'paid', 'unpaid', 'suspended']),
+                'linked_billing_total'
+            )
             ->whereExists(function ($query) {
                 $query->selectRaw(1)
                     ->from('shh_store_orders')
@@ -121,6 +145,15 @@ class ClientResource extends Resource
                 TextEntry::make('linked_servers_count')
                     ->label('Connected Servers')
                     ->numeric(),
+                TextEntry::make('connected_nodes_count')
+                    ->label('Connected Nodes')
+                    ->numeric(),
+                TextEntry::make('connected_node_name')
+                    ->label('Connected Node')
+                    ->placeholder('N/A'),
+                TextEntry::make('linked_billing_total')
+                    ->label('Linked Billing Total')
+                    ->money('USD'),
                 TextEntry::make('unpaid_linked_servers_count')
                     ->label('Unpaid Linked Orders')
                     ->numeric(),
@@ -152,6 +185,18 @@ class ClientResource extends Resource
                     ->numeric()
                     ->badge()
                     ->color(fn ($state) => $state > 0 ? 'success' : 'gray'),
+                TextColumn::make('connected_nodes_count')
+                    ->label('Connected Nodes')
+                    ->numeric()
+                    ->sortable(),
+                TextColumn::make('connected_node_name')
+                    ->label('Connected Node')
+                    ->placeholder('N/A')
+                    ->toggleable(),
+                TextColumn::make('linked_billing_total')
+                    ->label('Linked Billing')
+                    ->money('USD')
+                    ->sortable(),
                 TextColumn::make('total_spent')
                     ->label('Total Spent')
                     ->money('USD')
