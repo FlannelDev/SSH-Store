@@ -63,7 +63,7 @@ class ListStoreOrders extends ListRecords
                     }
 
                     $cycles = ['monthly', 'quarterly', 'annually'];
-                    $statuses = ['pending', 'paid', 'active', 'cancelled'];
+                    $statuses = ['pending', 'paid', 'active', 'unpaid', 'cancelled'];
                     $methods = ['stripe', 'paypal'];
                     $created = 0;
 

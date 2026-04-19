@@ -87,6 +87,26 @@ Primary config lives in `config/shh-store.php` and supports:
 
 Most payment values are managed in **Store → Settings** and persisted to `shh_store_settings`.
 
+## Versioning Workflow
+
+After each plugin code change, bump version metadata so `plugin.json` and `update.json` stay in sync.
+
+```bash
+php artisan shh-store:bump-version patch
+```
+
+Optional bump types:
+
+```bash
+php artisan shh-store:bump-version minor
+php artisan shh-store:bump-version major
+```
+
+This command updates both:
+
+- `shh-store/plugin.json` (`version`)
+- `shh-store/update.json` (`*.version`)
+
 ## Requirements
 
 - Pelican Panel (current compatible build)

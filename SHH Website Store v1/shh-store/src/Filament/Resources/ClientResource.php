@@ -60,6 +60,27 @@ class ClientResource extends Resource
                     ->whereColumn('user_id', 'users.id'),
                 'last_order_at'
             )
+            ->selectSub(
+                StoreOrder::selectRaw('COUNT(*)')
+                    ->whereColumn('user_id', 'users.id')
+                    ->whereNotNull('server_id'),
+                'linked_servers_count'
+            )
+            ->selectSub(
+                StoreOrder::selectRaw('COUNT(*)')
+                    ->whereColumn('user_id', 'users.id')
+                    ->whereNotNull('server_id')
+                    ->where('status', 'unpaid'),
+                'unpaid_linked_servers_count'
+            )
+            ->selectSub(
+                StoreOrder::selectRaw('MIN(bill_due_at)')
+                    ->whereColumn('user_id', 'users.id')
+                    ->whereNotNull('server_id')
+                    ->whereNotNull('bill_due_at')
+                    ->whereIn('status', ['active', 'paid', 'unpaid']),
+                'next_linked_bill_due_at'
+            )
             ->whereExists(function ($query) {
                 $query->selectRaw(1)
                     ->from('shh_store_orders')
@@ -95,6 +116,19 @@ class ClientResource extends Resource
                     ->dateTime()
                     ->placeholder('N/A'),
             ])->columns(4),
+
+            Section::make('Connected Servers & Billing')->schema([
+                TextEntry::make('linked_servers_count')
+                    ->label('Connected Servers')
+                    ->numeric(),
+                TextEntry::make('unpaid_linked_servers_count')
+                    ->label('Unpaid Linked Orders')
+                    ->numeric(),
+                TextEntry::make('next_linked_bill_due_at')
+                    ->label('Next Linked Bill Due')
+                    ->dateTime()
+                    ->placeholder('N/A'),
+            ])->columns(3),
         ]);
     }
 

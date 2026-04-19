@@ -19,7 +19,7 @@ class LinkedServersRelationManager extends RelationManager
 {
     protected static string $relationship = 'linkedServers';
 
-    protected static ?string $title = 'Linked Servers';
+    protected static ?string $title = 'Linked Servers & Billing';
 
     public static function canViewForRecord(Model $ownerRecord, string $pageClass): bool
     {
@@ -54,6 +54,13 @@ class LinkedServersRelationManager extends RelationManager
                 TextColumn::make('product.name')
                     ->label('Product')
                     ->placeholder('—'),
+                TextColumn::make('amount')
+                    ->label('Billing Amount')
+                    ->money('USD')
+                    ->sortable(),
+                TextColumn::make('billing_cycle')
+                    ->label('Cycle')
+                    ->badge(),
                 TextColumn::make('bill_due_at')
                     ->label('Bill Due')
                     ->dateTime('M j, Y g:i A')
@@ -70,6 +77,10 @@ class LinkedServersRelationManager extends RelationManager
                             return 'No due date';
                         }
 
+                        if ($record->bill_due_at->isPast() && $record->status !== 'unpaid') {
+                            return 'Awaiting unpaid status';
+                        }
+
                         if ($record->isUnpaidForSuspension()) {
                             return 'Eligible now';
                         }
@@ -81,6 +92,7 @@ class LinkedServersRelationManager extends RelationManager
                         'Eligible now' => 'danger',
                         'Already suspended' => 'gray',
                         'No due date' => 'warning',
+                        'Awaiting unpaid status' => 'warning',
                         default => 'info',
                     }),
                 TextColumn::make('suspended_for_nonpayment_at')
@@ -93,6 +105,7 @@ class LinkedServersRelationManager extends RelationManager
                     ->color(fn (string $state): string => match ($state) {
                         'paid', 'active' => 'success',
                         'pending', 'processing' => 'warning',
+                        'unpaid' => 'danger',
                         'cancelled', 'refunded' => 'danger',
                         'suspended' => 'gray',
                         default => 'gray',
@@ -107,6 +120,7 @@ class LinkedServersRelationManager extends RelationManager
                         return $query
                             ->whereNotNull('bill_due_at')
                             ->where('bill_due_at', '<=', $threshold)
+                            ->where('status', 'unpaid')
                             ->whereNull('suspended_for_nonpayment_at')
                             ->whereNotIn('status', ['cancelled', 'refunded', 'suspended']);
                     }),

@@ -61,6 +61,7 @@ class OrdersRelationManager extends RelationManager
                     ->color(fn (string $state): string => match ($state) {
                         'paid', 'active' => 'success',
                         'pending', 'processing' => 'warning',
+                        'unpaid' => 'danger',
                         'cancelled', 'refunded' => 'danger',
                         'suspended' => 'gray',
                         default => 'gray',

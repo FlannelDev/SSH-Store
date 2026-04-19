@@ -77,6 +77,10 @@ class StoreOrder extends Model
             return false;
         }
 
+        if ($this->status !== 'unpaid') {
+            return false;
+        }
+
         if (in_array($this->status, ['cancelled', 'refunded'], true)) {
             return false;
         }
@@ -84,6 +88,25 @@ class StoreOrder extends Model
         $days = max(0, $delayDays ?? static::suspensionDelayDays());
 
         return $this->bill_due_at->lessThanOrEqualTo(now()->subDays($days));
+    }
+
+    public function markUnpaidIfPastDue(): bool
+    {
+        if (!$this->bill_due_at) {
+            return false;
+        }
+
+        if ($this->bill_due_at->isFuture()) {
+            return false;
+        }
+
+        if (in_array($this->status, ['cancelled', 'refunded', 'suspended', 'unpaid'], true)) {
+            return false;
+        }
+
+        $this->update(['status' => 'unpaid']);
+
+        return true;
     }
 
     public function suspendForNonPayment(bool $force = false): bool

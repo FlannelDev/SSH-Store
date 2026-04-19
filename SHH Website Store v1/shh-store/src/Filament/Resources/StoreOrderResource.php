@@ -40,6 +40,7 @@ class StoreOrderResource extends Resource
                                 'paid' => 'Paid',
                                 'processing' => 'Processing',
                                 'active' => 'Active',
+                                'unpaid' => 'Unpaid',
                                 'suspended' => 'Suspended',
                                 'cancelled' => 'Cancelled',
                                 'refunded' => 'Refunded',
@@ -122,6 +123,7 @@ class StoreOrderResource extends Resource
                     ->color(fn (string $state): string => match ($state) {
                         'paid', 'active' => 'success',
                         'pending', 'processing' => 'warning',
+                        'unpaid' => 'danger',
                         'cancelled', 'refunded' => 'danger',
                         'suspended' => 'gray',
                         default => 'secondary',
@@ -154,6 +156,7 @@ class StoreOrderResource extends Resource
                         'paid' => 'Paid',
                         'processing' => 'Processing',
                         'active' => 'Active',
+                        'unpaid' => 'Unpaid',
                         'suspended' => 'Suspended',
                         'cancelled' => 'Cancelled',
                         'refunded' => 'Refunded',
