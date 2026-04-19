@@ -64,31 +64,21 @@ class ListStoreOrders extends ListRecords
                         return;
                     }
 
-                    $candidateEmails = $orphanedOrders
-                        ->pluck('customer_email')
-                        ->filter()
-                        ->map(fn ($email) => strtolower(trim((string) $email)))
-                        ->unique()
-                        ->values();
-
-                    $usersByNormalizedEmail = User::query()
-                        ->whereIn('email', $candidateEmails->all())
-                        ->get()
-                        ->keyBy(fn (User $user) => strtolower((string) $user->email));
-
                     $linked = 0;
                     $unmatched = 0;
 
                     foreach ($orphanedOrders as $order) {
                         $normalizedEmail = strtolower(trim((string) $order->customer_email));
-                        $user = $usersByNormalizedEmail->get($normalizedEmail);
+                        $userId = User::query()
+                            ->whereRaw('LOWER(email) = ?', [$normalizedEmail])
+                            ->value('id');
 
-                        if (!$user) {
+                        if (!$userId) {
                             $unmatched++;
                             continue;
                         }
 
-                        $order->forceFill(['user_id' => $user->id])->save();
+                        $order->forceFill(['user_id' => $userId])->save();
                         $linked++;
                     }
 
@@ -104,46 +94,71 @@ class ListStoreOrders extends ListRecords
                 ->color('primary')
                 ->requiresConfirmation()
                 ->modalHeading('Sync Order Nodes from Linked Servers')
-                ->modalDescription('This updates order node links to match each linked server\'s current node.')
+                ->modalDescription('This repairs order links by syncing client (email→user) and node (server→node).')
                 ->action(function (): void {
                     $orders = StoreOrder::query()
-                        ->whereNotNull('server_id')
+                        ->where(function ($query) {
+                            $query->whereNotNull('server_id')
+                                ->orWhereNull('user_id');
+                        })
                         ->with('server:id,node_id')
                         ->get();
 
                     if ($orders->isEmpty()) {
                         Notification::make()
-                            ->title('No linked server orders found')
+                            ->title('No orders found for sync')
                             ->info()
                             ->send();
 
                         return;
                     }
 
-                    $synced = 0;
-                    $alreadyAligned = 0;
+                    $nodesSynced = 0;
+                    $clientsLinked = 0;
+                    $recordsUpdated = 0;
                     $missingServerOrNode = 0;
+                    $missingEmailMatch = 0;
 
                     foreach ($orders as $order) {
-                        $serverNodeId = $order->server?->node_id;
+                        $updates = [];
 
-                        if (!$serverNodeId) {
+                        if (blank($order->user_id)) {
+                            $normalizedEmail = strtolower(trim((string) $order->customer_email));
+
+                            if ($normalizedEmail !== '') {
+                                $resolvedUserId = User::query()
+                                    ->whereRaw('LOWER(email) = ?', [$normalizedEmail])
+                                    ->value('id');
+
+                                if ($resolvedUserId) {
+                                    $updates['user_id'] = $resolvedUserId;
+                                    $clientsLinked++;
+                                } else {
+                                    $missingEmailMatch++;
+                                }
+                            } else {
+                                $missingEmailMatch++;
+                            }
+                        }
+
+                        $serverNodeId = $order->server_id ? $order->server?->node_id : null;
+
+                        if ($order->server_id && !$serverNodeId) {
                             $missingServerOrNode++;
-                            continue;
+                        } elseif ($serverNodeId && (int) $order->node_id !== (int) $serverNodeId) {
+                            $updates['node_id'] = $serverNodeId;
+                            $nodesSynced++;
                         }
 
-                        if ((int) $order->node_id === (int) $serverNodeId) {
-                            $alreadyAligned++;
-                            continue;
+                        if ($updates !== []) {
+                            $order->forceFill($updates)->save();
+                            $recordsUpdated++;
                         }
-
-                        $order->forceFill(['node_id' => $serverNodeId])->save();
-                        $synced++;
                     }
 
                     Notification::make()
-                        ->title('Node sync complete')
-                        ->body("Synced: {$synced} | Already aligned: {$alreadyAligned} | Missing server/node: {$missingServerOrNode}")
+                        ->title('Order link sync complete')
+                        ->body("Records updated: {$recordsUpdated} | Clients linked: {$clientsLinked} | Nodes synced: {$nodesSynced} | Missing email match: {$missingEmailMatch} | Missing server/node: {$missingServerOrNode}")
                         ->success()
                         ->send();
                 }),
