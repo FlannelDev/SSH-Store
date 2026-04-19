@@ -98,6 +98,55 @@ class ListStoreOrders extends ListRecords
                         ->success()
                         ->send();
                 }),
+            Action::make('syncOrderNodes')
+                ->label('Sync Linked Nodes')
+                ->icon('heroicon-o-server-stack')
+                ->color('primary')
+                ->requiresConfirmation()
+                ->modalHeading('Sync Order Nodes from Linked Servers')
+                ->modalDescription('This updates order node links to match each linked server\'s current node.')
+                ->action(function (): void {
+                    $orders = StoreOrder::query()
+                        ->whereNotNull('server_id')
+                        ->with('server:id,node_id')
+                        ->get();
+
+                    if ($orders->isEmpty()) {
+                        Notification::make()
+                            ->title('No linked server orders found')
+                            ->info()
+                            ->send();
+
+                        return;
+                    }
+
+                    $synced = 0;
+                    $alreadyAligned = 0;
+                    $missingServerOrNode = 0;
+
+                    foreach ($orders as $order) {
+                        $serverNodeId = $order->server?->node_id;
+
+                        if (!$serverNodeId) {
+                            $missingServerOrNode++;
+                            continue;
+                        }
+
+                        if ((int) $order->node_id === (int) $serverNodeId) {
+                            $alreadyAligned++;
+                            continue;
+                        }
+
+                        $order->forceFill(['node_id' => $serverNodeId])->save();
+                        $synced++;
+                    }
+
+                    Notification::make()
+                        ->title('Node sync complete')
+                        ->body("Synced: {$synced} | Already aligned: {$alreadyAligned} | Missing server/node: {$missingServerOrNode}")
+                        ->success()
+                        ->send();
+                }),
             Action::make('generateTestOrders')
                 ->label('Generate Test Orders')
                 ->icon('heroicon-o-beaker')

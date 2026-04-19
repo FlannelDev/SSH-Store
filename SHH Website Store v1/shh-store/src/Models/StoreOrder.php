@@ -51,15 +51,25 @@ class StoreOrder extends Model
     protected static function booted(): void
     {
         static::saving(function (StoreOrder $order): void {
-            if (filled($order->user_id)) {
+            if (!filled($order->user_id)) {
+                $resolvedUserId = $order->resolveLinkedUserId();
+
+                if ($resolvedUserId) {
+                    $order->user_id = $resolvedUserId;
+                }
+            }
+
+            $resolvedNodeId = $order->resolveLinkedNodeId();
+
+            if ($order->server_id) {
+                if ($resolvedNodeId) {
+                    $order->node_id = $resolvedNodeId;
+                }
+
                 return;
             }
 
-            $resolvedUserId = $order->resolveLinkedUserId();
-
-            if ($resolvedUserId) {
-                $order->user_id = $resolvedUserId;
-            }
+            $order->node_id = null;
         });
     }
 
@@ -74,6 +84,17 @@ class StoreOrder extends Model
         }
 
         return auth()->check() ? (int) auth()->id() : null;
+    }
+
+    protected function resolveLinkedNodeId(): ?int
+    {
+        if (!$this->server_id) {
+            return null;
+        }
+
+        return Server::query()
+            ->whereKey($this->server_id)
+            ->value('node_id');
     }
 
     public function user(): BelongsTo
