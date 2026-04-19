@@ -2,6 +2,7 @@
 
 namespace ShhStore\Http\Controllers;
 
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Log;
@@ -12,6 +13,7 @@ class PaymentController extends Controller
     public function success(Request $request, string $order)
     {
         $order = StoreOrder::where('order_number', $order)->firstOrFail();
+        $this->backfillOrderUser($order);
 
         if ($order->payment_method === 'stripe' && $request->has('session_id')) {
             try {
@@ -45,6 +47,7 @@ class PaymentController extends Controller
     public function cancel(string $order)
     {
         $order = StoreOrder::where('order_number', $order)->firstOrFail();
+        $this->backfillOrderUser($order);
 
         if ($order->status === 'pending') {
             $order->cancel();
@@ -56,6 +59,7 @@ class PaymentController extends Controller
     public function paypalCapture(Request $request, string $order)
     {
         $order = StoreOrder::where('order_number', $order)->firstOrFail();
+        $this->backfillOrderUser($order);
 
         $token = $request->input('token');
 
@@ -145,6 +149,8 @@ class PaymentController extends Controller
                 $order = StoreOrder::where('payment_id', $session->id)->first();
 
                 if ($order && $order->status !== 'paid') {
+                    $this->backfillOrderUser($order, $session->customer_details->email ?? $session->customer_email ?? null);
+
                     $order->update([
                         'status' => 'paid',
                         'transaction_id' => $session->payment_intent,
@@ -171,5 +177,28 @@ class PaymentController extends Controller
         }
 
         return response('OK', 200);
+    }
+
+    private function backfillOrderUser(StoreOrder $order, ?string $email = null): void
+    {
+        if (filled($order->user_id)) {
+            return;
+        }
+
+        $candidateEmail = $email ?: $order->customer_email;
+
+        if (blank($candidateEmail)) {
+            return;
+        }
+
+        $userId = User::query()
+            ->where('email', $candidateEmail)
+            ->value('id');
+
+        if (!$userId) {
+            return;
+        }
+
+        $order->forceFill(['user_id' => $userId])->save();
     }
 }

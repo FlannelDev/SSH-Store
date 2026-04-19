@@ -28,9 +28,7 @@ class LinkedServersRelationManager extends RelationManager
 
     public function getRelationship(): Relation|Builder
     {
-        return StoreOrder::query()
-            ->where('user_id', $this->getOwnerRecord()->id)
-            ->whereNotNull('server_id')
+        return $this->getOwnerRecord()->linkedServers()
             ->with(['server', 'node', 'product'])
             ->orderByDesc('created_at');
     }

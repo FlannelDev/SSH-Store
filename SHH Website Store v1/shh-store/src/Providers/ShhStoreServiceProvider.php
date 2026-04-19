@@ -3,6 +3,7 @@
 namespace ShhStore\Providers;
 
 use App\Models\Role;
+use App\Models\User;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Route;
@@ -52,8 +53,22 @@ class ShhStoreServiceProvider extends ServiceProvider
 
         $this->registerPermissions();
         $this->registerPolicies();
+        $this->registerModelRelationships();
         $this->registerRoutes();
         $this->registerLivewireComponents();
+    }
+
+    protected function registerModelRelationships(): void
+    {
+        User::resolveRelationUsing('storeOrders', function (User $user) {
+            return $user->hasMany(StoreOrder::class, 'user_id')->orderByDesc('created_at');
+        });
+
+        User::resolveRelationUsing('linkedServers', function (User $user) {
+            return $user->hasMany(StoreOrder::class, 'user_id')
+                ->whereNotNull('server_id')
+                ->orderByDesc('created_at');
+        });
     }
 
     protected function registerPermissions(): void

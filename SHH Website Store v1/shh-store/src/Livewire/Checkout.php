@@ -2,6 +2,7 @@
 
 namespace ShhStore\Livewire;
 
+use App\Models\User;
 use Livewire\Component;
 use ShhStore\Models\StoreOrder;
 use ShhStore\Models\StoreProduct;
@@ -89,9 +90,12 @@ class Checkout extends Component
         $this->processing = true;
         $this->paymentMethod = 'stripe';
 
+        $resolvedUserId = auth()->id()
+            ?? User::query()->where('email', $this->customerEmail)->value('id');
+
         $order = StoreOrder::create([
             'order_number' => StoreOrder::generateOrderNumber(),
-            'user_id' => auth()->id(),
+            'user_id' => $resolvedUserId,
             'product_id' => $this->product->id,
             'billing_cycle' => $this->billingCycle,
             'slots' => $this->product->hasPerSlotFee() ? $this->normalizeSlots($this->slots) : null,
@@ -151,9 +155,12 @@ class Checkout extends Component
         $this->processing = true;
         $this->paymentMethod = 'paypal';
 
+        $resolvedUserId = auth()->id()
+            ?? User::query()->where('email', $this->customerEmail)->value('id');
+
         $order = StoreOrder::create([
             'order_number' => StoreOrder::generateOrderNumber(),
-            'user_id' => auth()->id(),
+            'user_id' => $resolvedUserId,
             'product_id' => $this->product->id,
             'billing_cycle' => $this->billingCycle,
             'slots' => $this->product->hasPerSlotFee() ? $this->normalizeSlots($this->slots) : null,

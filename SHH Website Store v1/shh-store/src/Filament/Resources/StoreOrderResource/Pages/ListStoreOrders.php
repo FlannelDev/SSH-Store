@@ -41,6 +41,63 @@ class ListStoreOrders extends ListRecords
                         ->success()
                         ->send();
                 }),
+            Action::make('linkOrphanedOrders')
+                ->label('Link Orphaned Orders')
+                ->icon('heroicon-o-link')
+                ->color('info')
+                ->requiresConfirmation()
+                ->modalHeading('Link Orphaned Orders to Clients')
+                ->modalDescription('This matches orders with no linked client (`user_id`) to users by customer email.')
+                ->action(function (): void {
+                    $orphanedOrders = StoreOrder::query()
+                        ->whereNull('user_id')
+                        ->whereNotNull('customer_email')
+                        ->get();
+
+                    if ($orphanedOrders->isEmpty()) {
+                        Notification::make()
+                            ->title('No orphaned orders found')
+                            ->body('All orders are already linked to clients, or no customer emails were available.')
+                            ->info()
+                            ->send();
+
+                        return;
+                    }
+
+                    $candidateEmails = $orphanedOrders
+                        ->pluck('customer_email')
+                        ->filter()
+                        ->map(fn ($email) => strtolower(trim((string) $email)))
+                        ->unique()
+                        ->values();
+
+                    $usersByNormalizedEmail = User::query()
+                        ->whereIn('email', $candidateEmails->all())
+                        ->get()
+                        ->keyBy(fn (User $user) => strtolower((string) $user->email));
+
+                    $linked = 0;
+                    $unmatched = 0;
+
+                    foreach ($orphanedOrders as $order) {
+                        $normalizedEmail = strtolower(trim((string) $order->customer_email));
+                        $user = $usersByNormalizedEmail->get($normalizedEmail);
+
+                        if (!$user) {
+                            $unmatched++;
+                            continue;
+                        }
+
+                        $order->forceFill(['user_id' => $user->id])->save();
+                        $linked++;
+                    }
+
+                    Notification::make()
+                        ->title('Orphaned order link complete')
+                        ->body("Linked: {$linked} | Unmatched emails: {$unmatched}")
+                        ->success()
+                        ->send();
+                }),
             Action::make('generateTestOrders')
                 ->label('Generate Test Orders')
                 ->icon('heroicon-o-beaker')

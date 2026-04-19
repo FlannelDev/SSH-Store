@@ -4,6 +4,7 @@ namespace ShhStore\Filament\Resources;
 
 use App\Models\Node;
 use App\Models\Server;
+use App\Models\User;
 use Filament\Actions\EditAction;
 use Filament\Forms;
 use Filament\Resources\Resource;
@@ -34,6 +35,11 @@ class StoreOrderResource extends Resource
                     ->schema([
                         Forms\Components\TextInput::make('order_number')
                             ->disabled(),
+                        Forms\Components\Select::make('user_id')
+                            ->label('Linked Client')
+                            ->options(fn () => User::query()->orderBy('username')->pluck('username', 'id'))
+                            ->searchable()
+                            ->preload(),
                         Forms\Components\Select::make('status')
                             ->options([
                                 'pending' => 'Pending',
@@ -105,6 +111,11 @@ class StoreOrderResource extends Resource
                 Tables\Columns\TextColumn::make('order_number')
                     ->searchable()
                     ->sortable(),
+                Tables\Columns\TextColumn::make('user.username')
+                    ->label('Client')
+                    ->searchable()
+                    ->sortable()
+                    ->placeholder('—'),
                 Tables\Columns\TextColumn::make('customer_email')
                     ->searchable()
                     ->sortable(),

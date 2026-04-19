@@ -48,6 +48,34 @@ class StoreOrder extends Model
         ];
     }
 
+    protected static function booted(): void
+    {
+        static::saving(function (StoreOrder $order): void {
+            if (filled($order->user_id)) {
+                return;
+            }
+
+            $resolvedUserId = $order->resolveLinkedUserId();
+
+            if ($resolvedUserId) {
+                $order->user_id = $resolvedUserId;
+            }
+        });
+    }
+
+    protected function resolveLinkedUserId(): ?int
+    {
+        $normalizedEmail = strtolower(trim((string) $this->customer_email));
+
+        if ($normalizedEmail !== '') {
+            return User::query()
+                ->whereRaw('LOWER(email) = ?', [$normalizedEmail])
+                ->value('id');
+        }
+
+        return auth()->check() ? (int) auth()->id() : null;
+    }
+
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);

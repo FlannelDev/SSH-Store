@@ -8,7 +8,6 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
-use ShhStore\Models\StoreOrder;
 
 class OrdersRelationManager extends RelationManager
 {
@@ -23,7 +22,7 @@ class OrdersRelationManager extends RelationManager
 
     public function getRelationship(): Relation|Builder
     {
-        return StoreOrder::where('user_id', $this->getOwnerRecord()->id);
+        return $this->getOwnerRecord()->storeOrders()->with(['product']);
     }
 
     public function table(Table $table): Table
