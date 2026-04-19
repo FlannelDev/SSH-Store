@@ -3,9 +3,11 @@
 namespace ShhStore\Livewire;
 
 use App\Models\User;
+use Illuminate\Support\Facades\Log;
 use Livewire\Component;
 use ShhStore\Models\StoreOrder;
 use ShhStore\Models\StoreProduct;
+use Throwable;
 
 class Checkout extends Component
 {
@@ -27,8 +29,10 @@ class Checkout extends Component
         $this->billingCycle = in_array($cycle, ['monthly', 'quarterly', 'annually']) ? $cycle : 'monthly';
 
         if (auth()->check()) {
-            $this->customerEmail = auth()->user()->email;
-            $this->customerName = auth()->user()->name;
+            $user = auth()->user();
+
+            $this->customerEmail = (string) ($user->email ?? '');
+            $this->customerName = (string) ($user->name ?? $user->username ?? '');
         }
 
         $this->slots = $this->product->hasPerSlotFee()
@@ -90,6 +94,15 @@ class Checkout extends Component
         $this->processing = true;
         $this->paymentMethod = 'stripe';
 
+        $stripeSecret = (string) config('shh-store.stripe.secret', '');
+
+        if (blank($stripeSecret)) {
+            $this->processing = false;
+            session()->flash('error', 'Stripe is not configured yet. Please contact support.');
+
+            return;
+        }
+
         $resolvedUserId = auth()->id()
             ?? User::query()->where('email', $this->customerEmail)->value('id');
 
@@ -108,7 +121,7 @@ class Checkout extends Component
         ]);
 
         try {
-            $stripe = new \Stripe\StripeClient(config('shh-store.stripe.secret'));
+            $stripe = new \Stripe\StripeClient($stripeSecret);
 
             $session = $stripe->checkout->sessions->create([
                 'payment_method_types' => ['card'],
@@ -136,7 +149,12 @@ class Checkout extends Component
             $order->update(['payment_id' => $session->id]);
 
             $this->redirect($session->url);
-        } catch (\Exception $e) {
+        } catch (Throwable $e) {
+            Log::error('SHH Store checkout: Stripe initialization failed', [
+                'order_number' => $order->order_number,
+                'error' => $e->getMessage(),
+            ]);
+
             $order->cancel();
             $order->update(['meta' => ['error' => $e->getMessage()]]);
             $this->processing = false;
@@ -154,6 +172,16 @@ class Checkout extends Component
 
         $this->processing = true;
         $this->paymentMethod = 'paypal';
+
+        $paypalClientId = (string) config('shh-store.paypal.client_id', '');
+        $paypalClientSecret = (string) config('shh-store.paypal.client_secret', '');
+
+        if (blank($paypalClientId) || blank($paypalClientSecret)) {
+            $this->processing = false;
+            session()->flash('error', 'PayPal is not configured yet. Please contact support.');
+
+            return;
+        }
 
         $resolvedUserId = auth()->id()
             ?? User::query()->where('email', $this->customerEmail)->value('id');
@@ -177,13 +205,13 @@ class Checkout extends Component
             $provider->setApiCredentials([
                 'mode' => config('shh-store.paypal.mode'),
                 'sandbox' => [
-                    'client_id' => config('shh-store.paypal.client_id'),
-                    'client_secret' => config('shh-store.paypal.client_secret'),
+                    'client_id' => $paypalClientId,
+                    'client_secret' => $paypalClientSecret,
                     'app_id' => '',
                 ],
                 'live' => [
-                    'client_id' => config('shh-store.paypal.client_id'),
-                    'client_secret' => config('shh-store.paypal.client_secret'),
+                    'client_id' => $paypalClientId,
+                    'client_secret' => $paypalClientSecret,
                     'app_id' => '',
                 ],
                 'payment_action' => 'Sale',
@@ -227,7 +255,12 @@ class Checkout extends Component
             $order->update(['meta' => ['error' => 'Failed to create PayPal order', 'response' => $paypalOrder]]);
             $this->processing = false;
             session()->flash('error', 'PayPal initialization failed. Please try again.');
-        } catch (\Exception $e) {
+        } catch (Throwable $e) {
+            Log::error('SHH Store checkout: PayPal initialization failed', [
+                'order_number' => $order->order_number,
+                'error' => $e->getMessage(),
+            ]);
+
             $order->cancel();
             $order->update(['meta' => ['error' => $e->getMessage()]]);
             $this->processing = false;
